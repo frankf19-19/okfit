@@ -65,7 +65,13 @@ footer{position:relative;z-index:1;text-align:center;font-size:.8rem;color:var(-
 .scen b{color:var(--navyd);font-size:1.02rem;}
 .scen .need{font-size:.82rem;color:var(--muted);margin-top:6px;}
 .scen .go{color:var(--blue);font-size:.85rem;font-weight:bold;margin-top:8px;display:block;}
-.hint{background:var(--pale);color:var(--navyd);border-radius:8px;padding:9px 14px;font-size:.87rem;margin-bottom:14px;}
+.hint{background:var(--pale);color:var(--navyd);border-radius:8px;padding:10px 16px;font-size:.9rem;margin-bottom:18px;}
+details.card summary{cursor:pointer;color:var(--navyd);font-weight:bold;font-size:.92rem;}
+details.card{padding:12px 18px;}
+details.card[open]{padding:18px;}
+.card{margin:18px 0;}
+.grid{gap:16px;}
+h2{margin:22px 0 12px;}
 ul{margin:6px 0 6px 22px;}
 .spin{display:inline-block;width:18px;height:18px;border:3px solid var(--pale);
   border-top-color:var(--navy);border-radius:50%;animation:sp 1s linear infinite;vertical-align:middle;}
@@ -80,121 +86,29 @@ ul{margin:6px 0 6px 22px;}
   <div class="brand"><img src="logo.png" alt="HOLY VISION 優立得" onerror="this.style.display='none';this.parentNode.insertAdjacentHTML('beforeend','HOLY VISION<br>優立得')"></div>
 </header>
 <main>
-<div class="disclaimer">本系統為驗配輔助參考工具,所有計算與判讀依據 Euclid 原廠與優立得教材之明文規則;<b>最終試片選擇與處方由驗配醫師決定</b>。</div>
+<div class="disclaimer">驗配輔助工具,規則依 Euclid 原廠與優立得教材;<b>最終判斷由驗配醫師決定</b>。</div>
 
 <nav class="tabs">
-  <button class="on" data-p="p0">使用指引</button>
-  <button data-p="p1">試片選擇</button>
-  <button data-p="p7">Topo 驗配</button>
+  <button class="on" data-p="p7">驗配評估</button>
   <button data-p="p2">螢光評估</button>
   <button data-p="p3">開立處方</button>
   <button data-p="p6">戴後追蹤</button>
   <button data-p="p4">規則出處</button>
 </nav>
 
-<!-- 使用指引 -->
-<section id="p0" class="panel on">
-<h2>患者現在是什麼狀況?點選對應情境即可</h2>
-<p class="src" style="margin-bottom:12px">每個分頁獨立使用,依患者當下階段擇一即可,<b>不需要每頁都操作、也沒有固定順序</b>。</p>
-<div class="grid">
-  <div class="card scen" onclick="goTab('p1')">
-    <b>新患者,還沒戴過片</b>
-    <p style="margin-top:6px">要決定第一片試片的 AC、直徑與片種。</p>
-    <span class="need">需要準備:驗光單度數(SPH)+ K 值(手動輸入或上傳原始 topo 圖自動帶入)</span>
-    <span class="go">→ 前往「試片選擇」</span>
-  </div>
-  <div class="card scen" onclick="goTab('p7')">
-    <b>用 topo 圖驗配(免手動輸入 K 值)</b>
-    <p style="margin-top:6px">上傳原始 topo,AI 讀取 K 值 → 試片與處方建議,並產生模擬螢光染色示意圖。</p>
-    <span class="need">需要準備:原始 topo 圖 + 驗光單度數(SPH)</span>
-    <span class="go">→ 前往「Topo 驗配」</span>
-  </div>
-  <div class="card scen" onclick="goTab('p2')">
-    <b>試片剛戴上,要看鬆緊</b>
-    <p style="margin-top:6px">診間評估配適:理想/偏鬆/偏緊/偏位,以及對應怎麼調整。</p>
-    <span class="need">需要準備:螢光染色照片(可加 topo 圖輔助)</span>
-    <span class="go">→ 前往「螢光評估」</span>
-  </div>
-  <div class="card scen" onclick="goTab('p3')">
-    <b>配適確認 OK,要訂片</b>
-    <p style="margin-top:6px">計算正式處方度數並產生訂片字串(含片種、顏色)。</p>
-    <span class="need">需要準備:試片度數 + 戴片 OR 結果 + 加深值</span>
-    <span class="go">→ 前往「開立處方」</span>
-  </div>
-  <div class="card scen" onclick="goTab('p6')">
-    <b>已配戴一段時間,回診/效果不好</b>
-    <p style="margin-top:6px">用戴後 topo 判斷治療型態,依配戴時長給對應處置(未滿兩週原則上先觀察)。</p>
-    <span class="need">需要準備:戴後 topo 圖(建議差異圖)+ 配戴時長 + 殘餘度數</span>
-    <span class="go">→ 前往「戴後追蹤」</span>
-  </div>
-</div>
-<p class="src" style="margin-top:14px">常見動線參考:試片選擇(或 Topo 驗配)→ 螢光評估 →(必要時換試片再評估)→ 開立處方;戴後回診則直接用「戴後追蹤」。「規則出處」列出全部內建規則與文件依據,供查證。</p>
-</section>
-
 <!-- 試片選擇 -->
-<section id="p1" class="panel">
-<div class="hint">使用時機:<b>新患者尚未戴片</b>,手動輸入驗光單與 K 值決定第一片試片與片種。若手邊有 topo 圖,可改用「Topo 驗配」分頁自動讀取。</div>
-<h2>驗光單與角膜資料(單眼)</h2>
-<div class="grid">
-  <div class="field"><label>眼別</label><select id="eye"><option>OD 右眼</option><option>OS 左眼</option></select></div>
-  <div class="field"><label>球面度數 SPH(D,負值)</label><input id="sph" type="number" step="0.25" placeholder="-3.75"></div>
-  <div class="field"><label>柱面度數 CYL(D,負值)</label><input id="cyl" type="number" step="0.25" placeholder="-1.00"></div>
-  <div class="field"><label>平K FK(D)</label><input id="fk" type="number" step="0.25" placeholder="44.00"></div>
-  <div class="field"><label>陡K SK(D)</label><input id="sk" type="number" step="0.25" placeholder="45.50"></div>
-  <div class="field"><label>HVID(mm,建議以 topo 卡尺水平量測)</label><input id="hvid" type="number" step="0.1" placeholder="11.4"></div>
-  <div class="field"><label>近視年增速(近視控制用,選填)</label>
-    <select id="prog"><option value="">未評估</option><option value="slow">慢:&lt;0.50D/年 或眼軸&lt;0.2mm/年</option>
-    <option value="mid">中:0.50–1.00D/年 或眼軸0.2–0.4mm/年</option>
-    <option value="fast">快:&gt;1.00D/年 或眼軸&gt;0.4mm/年</option></select></div>
-  <div class="field"><label>Topo:limbus-to-limbus 散光 / 8mm弦高度差&gt;25µm(選填)</label>
-    <select id="l2l"><option value="">未評估</option><option value="y">是</option><option value="n">否</option></select></div>
-  <div class="field"><label>散光軸度(選填,自動判斷順/逆散)</label><input id="axDeg" type="number" step="1" min="0" max="180" placeholder="175" onchange="autoAxis()"></div>
-  <div class="field"><label>散光軸向(可自動帶入)</label>
-    <select id="axis"><option value="">未評估</option><option value="wtr">順散 WTR(軸約180±30)</option><option value="atr">逆散 ATR(軸約90±30)</option><option value="obl">斜散</option></select></div>
-  <div class="field"><label>暗處瞳孔直徑(mm,選填,低照度下量測)</label><input id="pupil" type="number" step="0.5" placeholder="5.5"></div>
-  <div class="field"><label>e 值(選填)</label><input id="ev" type="number" step="0.05" placeholder="0.50"></div>
-</div>
-<div class="card" style="margin-top:14px">
-  <b>角膜矢高(sag)估算器(學理計算,選填)</b>
-  <p class="src" style="margin:6px 0">以圓錐曲線模型估算兩主徑線在指定弦長的矢高與高度差,適用於無高度圖時的散光片預估;公式 z=y²/(r(1+√(1−(1+Q)y²/r²))),Q=−e²。結果為幾何估算,與實測高度圖有差異時以高度圖為準。</p>
-  <div class="grid">
-    <div class="field"><label>平K(D,可沿用上方欄位)</label><input id="sgFk" type="number" step="0.25" placeholder="44.00"></div>
-    <div class="field"><label>陡K(D)</label><input id="sgSk" type="number" step="0.25" placeholder="45.50"></div>
-    <div class="field"><label>e 值(未量測用 0.50)</label><input id="sgE" type="number" step="0.05" value="0.50"></div>
-    <div class="field"><label>弦長(mm,AC 著陸帶約 8)</label><input id="sgC" type="number" step="0.5" value="8"></div>
-  </div>
-  <button class="btn sec" onclick="calcSag()">計算矢高</button>
-  <div id="sagOut"></div>
-</div>
-<div class="card" style="margin-top:14px">
-  <b>8mm 弦高度差計算器(選填,topo 高度圖判斷散光片,較 K 值換算精準)</b>
-  <p class="src" style="margin:6px 0">於 topo 高度圖(elevation map)讀取 8mm 弦長上兩主徑線各兩端點的高度值(µm),輸入後計算主徑線平均高度差(SHD)。</p>
-  <div class="grid">
-    <div class="field"><label>平K 徑線端點 1(µm)</label><input id="e1" type="number" step="1" placeholder="10"></div>
-    <div class="field"><label>平K 徑線端點 2(µm)</label><input id="e2" type="number" step="1" placeholder="-3"></div>
-    <div class="field"><label>陡K 徑線端點 1(µm)</label><input id="e3" type="number" step="1" placeholder="-24"></div>
-    <div class="field"><label>陡K 徑線端點 2(µm)</label><input id="e4" type="number" step="1" placeholder="-53"></div>
-  </div>
-  <button class="btn sec" onclick="calcSHD()">計算高度差</button>
-  <div id="shdOut"></div>
-</div>
-<button class="btn" onclick="calcTrial()">計算第一片試片</button>
-<div id="r1"></div>
-</section>
 
 <!-- Topo 驗配 -->
-<section id="p7" class="panel">
-<div class="hint">使用時機:<b>以原始 topo 圖直接驗配</b>——AI 讀取圖上 K 值 → 試片/片種/處方建議,並產生模擬螢光染色示意圖。(本頁需啟用 AI;免費版請於「試片選擇」手動輸入 K 值,結果相同)</div>
-<div class="card" style="border-left:5px solid var(--blue)">
-  <b>Topo 拍攝品質檢查(判讀前先確認)</b>
+<section id="p7" class="panel on">
+<div class="hint">上傳原始 topo + 輸入度數 → AI 自動產生試片、片種與預估建議。</div>
+<details class="card"><summary>Topo 拍攝品質檢查(點開)</summary>
   <ul style="margin-top:8px">
     <li>拍攝前請患者完整眨眼 2–3 次,使淚膜均勻(淚膜破裂會造成假性不規則)</li>
     <li>對焦準確、注視固定,環紋(mires)涵蓋完整,無眼瞼/睫毛陰影——必要時請患者睜大或輕提上瞼</li>
     <li>連拍至少 3 張取一致者(SimK 差異宜 <0.25D),差異過大重拍</li>
-    <li>戴後追蹤圖須與基線同一儀器、同一條件拍攝,差異比較才有效;偏位/中央島判讀以軸向差異圖為準</li>
+    <li>戴後追蹤圖須與基線同一儀器、同一條件拍攝;偏位/中央島以軸向差異圖為準</li>
   </ul>
-  <div class="src">通用臨床實務 + Euclid 地形圖文章(差異圖用法)</div>
-</div>
+</details>
 <h2>上傳原始 topo 圖</h2>
 <div class="grid">
   <div>
@@ -216,9 +130,58 @@ ul{margin:6px 0 6px 22px;}
 
 <!-- ② AI 判讀 -->
 <section id="p2" class="panel">
-<div class="hint">使用時機:<b>試片已戴上</b>,在診間以螢光染色評估鬆緊與配適;判讀後附原廠調整規則。</div>
-<div class="card" style="border-left:5px solid var(--blue)">
-  <b>初次配鏡檢查清單(Euclid Module 4)</b>
+<div class="hint">傳統試片流程:步驟一輸入驗光與 K 值算第一片試片 → 戴上 → 步驟二上傳染色照片/影片給 AI 判讀。</div>
+<h2>步驟一:第一片試片建議</h2>
+
+<div class="grid">
+  <div class="field"><label>眼別</label><select id="eye"><option>OD 右眼</option><option>OS 左眼</option></select></div>
+  <div class="field"><label>球面度數 SPH(D,負值)</label><input id="sph" type="number" step="0.25" placeholder="-3.75"></div>
+  <div class="field"><label>柱面度數 CYL(D,負值)</label><input id="cyl" type="number" step="0.25" placeholder="-1.00"></div>
+  <div class="field"><label>平K FK(D)</label><input id="fk" type="number" step="0.25" placeholder="44.00"></div>
+  <div class="field"><label>陡K SK(D)</label><input id="sk" type="number" step="0.25" placeholder="45.50"></div>
+  <div class="field"><label>HVID(mm,建議以 topo 卡尺水平量測)</label><input id="hvid" type="number" step="0.1" placeholder="11.4"></div>
+</div>
+<details style="margin:4px 0 10px"><summary style="cursor:pointer;color:var(--muted);font-size:.9rem">選填條件(近視進展/散光軸向/瞳孔/e值,點開)</summary>
+<div class="grid" style="margin-top:8px">
+  <div class="field"><label>近視年增速(近視控制用,選填)</label>
+    <select id="prog"><option value="">未評估</option><option value="slow">慢:&lt;0.50D/年 或眼軸&lt;0.2mm/年</option>
+    <option value="mid">中:0.50–1.00D/年 或眼軸0.2–0.4mm/年</option>
+    <option value="fast">快:&gt;1.00D/年 或眼軸&gt;0.4mm/年</option></select></div>
+  <div class="field"><label>Topo:limbus-to-limbus 散光 / 8mm弦高度差&gt;25µm(選填)</label>
+    <select id="l2l"><option value="">未評估</option><option value="y">是</option><option value="n">否</option></select></div>
+  <div class="field"><label>散光軸度(選填,自動判斷順/逆散)</label><input id="axDeg" type="number" step="1" min="0" max="180" placeholder="175" onchange="autoAxis()"></div>
+  <div class="field"><label>散光軸向(可自動帶入)</label>
+    <select id="axis"><option value="">未評估</option><option value="wtr">順散 WTR(軸約180±30)</option><option value="atr">逆散 ATR(軸約90±30)</option><option value="obl">斜散</option></select></div>
+  <div class="field"><label>暗處瞳孔直徑(mm,選填,低照度下量測)</label><input id="pupil" type="number" step="0.5" placeholder="5.5"></div>
+  <div class="field"><label>e 值(選填)</label><input id="ev" type="number" step="0.05" placeholder="0.50"></div>
+</div></details>
+<details class="card"><summary>角膜矢高(sag)估算器(學理,點開)</summary>
+  <p class="src" style="margin:6px 0">以圓錐曲線模型估算兩主徑線在指定弦長的矢高與高度差,適用於無高度圖時的散光片預估;公式 z=y²/(r(1+√(1−(1+Q)y²/r²))),Q=−e²。結果為幾何估算,與實測高度圖有差異時以高度圖為準。</p>
+  <div class="grid">
+    <div class="field"><label>平K(D,可沿用上方欄位)</label><input id="sgFk" type="number" step="0.25" placeholder="44.00"></div>
+    <div class="field"><label>陡K(D)</label><input id="sgSk" type="number" step="0.25" placeholder="45.50"></div>
+    <div class="field"><label>e 值(未量測用 0.50)</label><input id="sgE" type="number" step="0.05" value="0.50"></div>
+    <div class="field"><label>弦長(mm,AC 著陸帶約 8)</label><input id="sgC" type="number" step="0.5" value="8"></div>
+  </div>
+  <button class="btn sec" onclick="calcSag()">計算矢高</button>
+  <div id="sagOut"></div>
+</details>
+<details class="card"><summary>8mm 弦高度差計算器(topo 高度圖,點開)</summary>
+  <p class="src" style="margin:6px 0">於 topo 高度圖(elevation map)讀取 8mm 弦長上兩主徑線各兩端點的高度值(µm),輸入後計算主徑線平均高度差(SHD)。</p>
+  <div class="grid">
+    <div class="field"><label>平K 徑線端點 1(µm)</label><input id="e1" type="number" step="1" placeholder="10"></div>
+    <div class="field"><label>平K 徑線端點 2(µm)</label><input id="e2" type="number" step="1" placeholder="-3"></div>
+    <div class="field"><label>陡K 徑線端點 1(µm)</label><input id="e3" type="number" step="1" placeholder="-24"></div>
+    <div class="field"><label>陡K 徑線端點 2(µm)</label><input id="e4" type="number" step="1" placeholder="-53"></div>
+  </div>
+  <button class="btn sec" onclick="calcSHD()">計算高度差</button>
+  <div id="shdOut"></div>
+</details>
+<button class="btn" onclick="calcTrial()">計算第一片試片</button>
+<div id="r1"></div>
+
+<h2 style="margin-top:26px">步驟二:螢光染色 AI 判讀</h2>
+<details class="card"><summary>初次配鏡檢查清單(點開)</summary>
   <ul style="margin-top:8px">
     <li>配鏡前:鏡片以 GP 核可藥水完成清潔、消毒、潤濕</li>
     <li>裂隙燈(有/無螢光染色):鏡片大致置中、眨眼有移動、早期 bulls-eye 圖形形成</li>
@@ -226,26 +189,19 @@ ul{margin:6px 0 6px 22px;}
     <li>衛教:戴取方式(I&R)、清潔消毒流程、人工淚液點用</li>
     <li>吸附處理衛教(必教):取片前先點人工淚液(黏稠型優於生理食鹽水)、以下眼瞼推動鏡片確認移動後再取;<b class="warn">鏡片吸附時勿以吸棒硬拔</b>——負壓會造成瞳孔中央上皮損傷與晨間視力模糊</li>
     <li>官方配戴時程:睡前 15–20 分鐘戴入,確保 8–10 小時閉眼配戴;「有疑慮就取下」——異物感先取下清潔重戴,持續則勿配戴</li>
-    <li>預約:隔日晨間回診(醒後數小時內),<b>戴著鏡片來</b>——評估置中與鏡片吸附</li>
+    <li>預約:隔日晨間回診(醒後數小時內),<b>戴著鏡片來</b>——評估置中與吸附</li>
   </ul>
-</div>
+</details>
 <h2>上傳螢光染色圖</h2>
-<div class="drop" id="dropF" onclick="pickImg('fl')">點擊上傳<b>螢光染色圖</b><div id="prevF"></div></div>
-<input id="fileF" type="file" accept="image/*" hidden>
+<div class="drop" id="dropF" onclick="pickImg('fl')">點擊上傳<b>螢光染色圖或短影片</b><br><span style="font-size:.8rem;color:var(--muted)">影片建議 5–10 秒含數次眨眼(上限 18MB),可評估鏡片動態移動量</span><div id="prevF"></div></div>
+<input id="fileF" type="file" accept="image/*,video/*" hidden>
 <h2>試片背景資訊(提供 AI 判讀脈絡,選填)</h2>
 <div class="grid">
   <div class="field"><label>目前試片(度數/AC/直徑)</label><input id="ctxLens" placeholder="-4.00 / 44.25 / 10.6"></div>
   <div class="field"><label>是否為散光片</label><select id="ctxToric"><option value="n">否</option><option value="y">是</option></select></div>
   <div class="field"><label>戴片時間</label><select id="ctxWear"><option>戴片後即時(診間評估)</option><option>過夜配戴後回診</option></select></div>
 </div>
-<div class="grid" style="margin-top:6px">
-  <div><button class="btn" onclick="analyze()">AI 判讀(需啟用 AI 功能)</button></div>
-  <div>
-    <div class="field"><label>或:醫師手動判讀後選擇分類(免費)</label>
-      <select id="flManual"><option value="">— 選擇判讀結果 —</option><option>理想</option><option>偏鬆(過平)</option><option>偏緊(過陡)</option><option>上方偏位</option><option>下方偏位</option><option>側向偏位</option><option>中央島/Vaulting</option></select></div>
-    <button class="btn sec" onclick="manualFl()">顯示對應調整規則</button>
-  </div>
-</div>
+<button class="btn" onclick="analyze()">AI 判讀</button>
 <div id="r2"></div>
 </section>
 
@@ -273,7 +229,7 @@ ul{margin:6px 0 6px 22px;}
 
 <!-- 戴後追蹤 -->
 <section id="p6" class="panel">
-<div class="hint">使用時機:<b>患者已配戴一段時間回診</b>(或反映效果不佳),以戴後 topo 判斷並依配戴時長給處置。</div>
+<div class="hint">上傳戴後 topo + 選配戴時長 → AI 判讀型態、進度對照與處置建議。</div>
 <h2>戴後追蹤判讀</h2>
 <div class="grid">
   <div>
@@ -284,6 +240,7 @@ ul{margin:6px 0 6px 22px;}
     <div class="field"><label>已配戴時長</label>
       <select id="ptDur"><option value="1">隔日(首夜後晨間)</option><option value="7">1 星期</option><option value="14">2 星期</option><option value="21">3 星期</option><option value="30">1 個月</option><option value="90">3 個月</option></select></div>
     <div class="field" style="margin-top:8px"><label>目前殘餘度數(D,無殘餘填 0)</label><input id="ptRes" type="number" step="0.25" value="0" placeholder="-0.50"></div>
+    <details style="margin-top:8px"><summary style="cursor:pointer;color:var(--muted);font-size:.9rem">進階欄位(調整值計算/鑑別用,點開)</summary>
     <div class="field" style="margin-top:8px"><label>目前處方 target(D,選填)</label><input id="ptTarget" type="number" step="0.25" placeholder="-4.75"></div>
     <div class="field" style="margin-top:8px"><label>目前 AC(D,供調整值計算)</label><input id="ptAC" type="number" step="0.25" placeholder="44.25"></div>
     <div class="field" style="margin-top:8px"><label>目前鏡片直徑(mm)</label><input id="ptDia" type="number" step="0.1" placeholder="10.6"></div>
@@ -293,17 +250,11 @@ ul{margin:6px 0 6px 22px;}
     <div class="field" style="margin-top:8px"><label>視力抱怨時段(選填,啟用鑑別樹)</label>
       <select id="ptSymTime"><option value="">無特別抱怨</option><option value="am">晨間:取片後數小時內模糊</option><option value="pm">午後起視力逐漸下降</option><option value="night">夜間眩光/光暈</option><option value="all">全天視力不佳</option></select></div>
     <div class="field" style="margin-top:8px"><label>患者主觀視力/症狀補充(選填)</label><input id="ptSym" placeholder="例:白天視力浮動、夜間眩光"></div>
+    </details>
   </div>
 </div>
 <div class="card" id="visitCheck" style="border-left:5px solid var(--blue)"></div>
-<div class="grid" style="margin-top:6px">
-  <div><button class="btn" onclick="analyzePost()">AI 判讀戴後 topo(需啟用 AI 功能)</button></div>
-  <div>
-    <div class="field"><label>或:醫師手動判讀後選擇分類(免費)</label>
-      <select id="ptManual"><option value="">— 選擇判讀結果 —</option><option>理想</option><option>上方偏位</option><option>下方偏位</option><option>側向偏位</option><option>中央島/Vaulting</option><option>治療區偏小</option><option>橢圓/不完整治療區</option></select></div>
-    <button class="btn sec" onclick="manualPost()">顯示處置建議與進度對照</button>
-  </div>
-</div>
+<button class="btn" onclick="analyzePost()">AI 判讀戴後 topo</button>
 <div id="r6"></div>
 </section>
 
@@ -369,14 +320,6 @@ ul{margin:6px 0 6px 22px;}
 </table></div>
 </section>
 
-<div class="card" id="setupCard" style="border-color:var(--gold)">
-  <b>系統設定(進階)</b>——連線已由系統內建,此處留空即可;僅在需要覆寫內建設定時填寫
-  <div class="grid" style="margin-top:10px">
-    <div class="field"><label>Cloudflare Worker 網址</label><input id="cfgUrl" placeholder="https://okfit.你的帳號.workers.dev"></div>
-    <div class="field"><label>存取密碼(APP_TOKEN)</label><input id="cfgTok" type="password"></div>
-  </div>
-  <button class="btn sec" onclick="saveCfg()">儲存設定</button> <span id="cfgMsg"></span>
-</div>
 </main>
 <footer>優立得國際 HOLY VISION｜本工具僅供專業驗配人員輔助使用,不構成醫療診斷。</footer>
 
@@ -396,11 +339,6 @@ function goTab(p){
   window.scrollTo({top:0});}
 const round25=v=>Math.round(v*4)/4;
 const fmt=v=>(v>0?'+':'')+v.toFixed(2);
-$('cfgUrl').value=localStorage.getItem('okfit_url')||'';
-$('cfgTok').value=localStorage.getItem('okfit_tok')||'';
-function saveCfg(){localStorage.setItem('okfit_url',$('cfgUrl').value.trim());
-  localStorage.setItem('okfit_tok',$('cfgTok').value.trim());
-  $('cfgMsg').textContent='已儲存';setTimeout(()=>$('cfgMsg').textContent='',2000);}
 $('pExtra').onchange=()=>{$('pExtraCustomWrap').style.display=$('pExtra').value==='custom'?'block':'none';};
 
 /* ---------- 規則引擎 ---------- */
@@ -605,9 +543,12 @@ const imgs={fl:null,tp:null,bt:null,pt:null};
 const IMGMAP={fl:['fileF','prevF','dropF'],tp:['fileT','prevT','dropT'],bt:['fileB','prevB','dropB'],pt:['fileP','prevP','dropP']};
 function pickImg(k){const [fi,pv,dp]=IMGMAP[k];const f=$(fi);f.onchange=()=>{
   const file=f.files[0];if(!file)return;
+  const isVideo=file.type.startsWith('video/');
+  if(isVideo&&k!=='fl'){alert('影片僅支援螢光評估;此處請上傳圖片。');f.value='';return;}
+  if(isVideo&&file.size>18*1024*1024){alert('影片過大('+(file.size/1048576).toFixed(1)+'MB)。上限約 18MB:請錄 5–10 秒、1080p 以下,或壓縮後再傳。');f.value='';return;}
   const rd=new FileReader();rd.onload=()=>{
     imgs[k]={media_type:file.type,data:rd.result.split(',')[1]};
-    $(pv).innerHTML='<img src="'+rd.result+'" alt="">';
+    $(pv).innerHTML=isVideo?'<video src="'+rd.result+'" controls muted playsinline style="max-width:100%;max-height:240px;border-radius:8px"></video>':'<img src="'+rd.result+'" alt="">';
     $(dp).classList.add('has');};
   rd.readAsDataURL(file);};f.click();}
 
@@ -664,7 +605,8 @@ const ADJUST={
   '中央島/Vaulting':{act:'sag 過高:RC 放平 0.2mm(1.00D)。',src:'Euclid 認證 Module 5 + ABB'},
   '無法判讀':{act:'影像品質不足或非螢光染色圖,請重新拍攝(建議鈷藍光下、對焦清晰、鏡片全貌入鏡)。',src:'—'}};
 
-const PROMPT=`你是角膜塑型片(orthokeratology)螢光染色圖判讀輔助。僅依影像可見證據判讀,不得臆測。
+const PROMPT=`你是角膜塑型片(orthokeratology)螢光染色判讀輔助,輸入可能為單張照片或短影片。僅依影像可見證據判讀,不得臆測。
+若為影片:同時評估動態——眨眼時鏡片移動量(理想約 1–2mm;<1mm 偏緊/吸附傾向、>2mm 偏鬆)、移動方向與回位,於 movement 欄回報;圖形判讀取影格中最清晰穩定者。
 Euclid 鏡片結構(由中心至周邊,標準直徑 10.6mm):BC(標準寬 6.2mm,較角膜平、正壓區,形成 ≥5mm 治療區)→ RC(顯著較陡,環狀淚液庫、負壓區,螢光下應為亮環)→ AC1(半徑約等於平K)+ AC2(較 AC1 平 1.50D,貼合周邊漸平的角膜,著陸區,螢光下應為暗帶)→ 周邊弧(最平,edge lift 亮緣)。散光片(Toric)僅 RC 與 AC 非對稱,BC 與周邊弧對稱。
 判讀標準(Euclid 原廠明文):
 理想配適:鏡片置中不壓迫輪部;瞳孔周圍呈螢光環(RC 淚液環);360 度有足夠 edge lift;(動態)眨眼移動約 1–2mm。
@@ -678,20 +620,7 @@ Euclid 鏡片結構(由中心至周邊,標準直徑 10.6mm):BC(標準寬 6.2mm,�
 只輸出 JSON,不加任何其他文字與 markdown:
 {"classification":"理想|偏鬆(過平)|偏緊(過陡)|上方偏位|下方偏位|側向偏位|中央島/Vaulting|無法判讀","confidence":"高|中|低","fluorescein_findings":["…"],"topo_findings":["…或空陣列"],"movement":"無法由靜態影像評估","notes":"其他觀察或影像品質限制"}`;
 
-const NO_AI='<div class="card" style="border-left:5px solid var(--gold)"><b>AI 判讀未啟用(目前為免費版)</b><p style="margin-top:6px">免費版完整可用:試片選擇、開立處方、各計算器、回診檢查清單,以及本頁的<b>醫師手動判讀模式</b>(選擇分類後系統給出相同的原廠規則對應)。</p><p class="src">欲啟用 AI 看圖判讀:依 README 設定 Cloudflare Worker 與 API 金鑰後,於下方「系統設定」填入即可(每次判讀約 NT$1–3)。</p></div>';
-function manualFl(){
-  const c=$('flManual').value;
-  if(!c){$('r2').innerHTML='<div class="card warn">請先選擇判讀分類。</div>';return;}
-  renderAI({classification:c,confidence:'醫師判讀',fluorescein_findings:[],topo_findings:[],movement:'依裂隙燈動態評估',notes:''});
-}
-function manualPost(){
-  const c=$('ptManual').value;
-  if(!c){$('r6').innerHTML='<div class="card warn">請先選擇判讀分類。</div>';return;}
-  const days=parseInt($('ptDur').value), res=parseFloat($('ptRes').value)||0, toric=$('ptToric').value==='y';
-  renderPost({classification:c,confidence:'醫師判讀',map_type:'依醫師判讀',central_peak_sign:'',topo_findings:[]},days,res,toric);
-}
 async function analyze(){
-  if(!cfgUrl()){$('r2').innerHTML=NO_AI;return;}
   if(!imgs.fl){$('r2').innerHTML='<div class="card warn">請先上傳螢光染色圖。</div>';return;}
   $('r2').innerHTML='<div class="card"><span class="spin"></span> AI 判讀中…</div>';
   const content=[{type:'image',source:{type:'base64',...imgs.fl}}];
@@ -726,7 +655,6 @@ const PROMPT_BT=`你是角膜地形圖數值抄錄員。任務:只抄錄影像�
 {"readable":true|false,"flat_k":數值或null,"steep_k":數值或null,"hvid":數值或null,"e_value":數值或null,"image_quality":"良好|欠佳|無法評估","quality_issues":["環紋不完整/眼瞼陰影/失焦/淚膜破裂痕跡等,無則空陣列"],"source_labels":"你讀取的原始標籤與數字(供人工核對)","notes":"讀取限制說明"}`;
 
 async function analyzeTopoFit(){
-  if(!cfgUrl()){$('r7').innerHTML=NO_AI+'<div class="card"><p>免費版替代路徑:改用「<b>試片選擇</b>」分頁,手動輸入 topo 圖上的 SimK 平K/陡K 與 HVID,即可得到完全相同的試片與片種建議。</p></div>';return;}
   if(!imgs.bt){$('r7').innerHTML='<div class="card warn">請先上傳原始 topo 圖。</div>';return;}
   const sph=parseFloat($('tSph').value);
   if(isNaN(sph)){$('r7').innerHTML='<div class="card warn">請輸入球面度數 SPH(驗光單數值,topo 圖上沒有)。</div>';return;}
@@ -734,7 +662,7 @@ async function analyzeTopoFit(){
   try{
     const j=await callAI([{type:'image',source:{type:'base64',...imgs.bt}},{type:'text',text:PROMPT_BT}]);
     if(!j.readable||j.flat_k==null||j.steep_k==null){
-      $('r7').innerHTML='<div class="card warn">⚠ AI 無法從影像確實讀到 SimK 數值('+(j.notes||'')+')。請改用「試片選擇」分頁手動輸入,不做推估。</div>';return;}
+      $('r7').innerHTML='<div class="card warn">⚠ AI 無法從影像讀到 SimK 數值('+(j.notes||'')+')。<a href="#" onclick="goTab(\'p2\');return false">→ 至螢光評估頁「步驟一」手動輸入 K 值</a></div>';return;}
     const cyl=parseFloat($('tCyl').value)||0, prog=$('tProg').value, extra=parseFloat($('tExtra').value);
     const fk=j.flat_k, sk=j.steep_k, ca=+(sk-fk).toFixed(2);
     let h='<div class="card"><b>AI 抄錄之 topo 數值(請人工核對)</b><br>'
@@ -880,7 +808,6 @@ function durationGate(days,cls,res){
 }
 
 async function analyzePost(){
-  if(!cfgUrl()){$('r6').innerHTML=NO_AI;return;}
   if(!imgs.pt){$('r6').innerHTML='<div class="card warn">請先上傳戴後 topo 圖。</div>';return;}
   $('r6').innerHTML='<div class="card"><span class="spin"></span> AI 判讀中…</div>';
   const days=parseInt($('ptDur').value), res=parseFloat($('ptRes').value)||0,
