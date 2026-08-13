@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Euclid OK 驗配輔助系統｜優立得國際</title>
+<style>
+:root{
+  --navy:#1B4F9C; --navyd:#153F7E; --blue:#2E6FC0; --pale:#BBD5EE;
+  --ink:#24323C; --muted:#5B6B78; --card:#F4F8FC; --grey:#ECEFF3;
+  --line:#C9D8E8; --gold:#D98A2B; --ok:#2E8B57; --warn:#C0392B;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:"Microsoft JhengHei","微軟正黑體","Noto Sans TC",sans-serif;color:var(--ink);background:#fff;}
+.wave{position:fixed;left:0;top:0;bottom:0;width:120px;z-index:0;pointer-events:none;
+  background:linear-gradient(160deg,var(--navy) 0%,var(--blue) 60%,var(--pale) 100%);
+  clip-path:ellipse(75% 120% at -20% 40%);}
+@media(max-width:900px){.wave{width:46px;}}
+header{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;
+  padding:18px 28px 14px 140px;border-bottom:3px solid var(--navy);}
+@media(max-width:900px){header{padding-left:60px;flex-wrap:wrap;gap:6px;}}
+header h1{font-size:1.35rem;color:var(--navyd);letter-spacing:.5px;}
+header h1 small{display:block;font-size:.78rem;color:var(--muted);font-weight:normal;margin-top:2px;}
+.brand{text-align:right;color:var(--navy);font-weight:bold;line-height:1.2;}
+.brand img{height:44px;display:block;margin-left:auto;}
+main{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:20px 24px 60px 150px;}
+@media(max-width:900px){main{padding:16px 14px 60px 62px;}}
+.tabs{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap;}
+.tabs button{border:1px solid var(--line);background:var(--card);color:var(--navyd);
+  padding:10px 18px;border-radius:8px 8px 0 0;cursor:pointer;font-size:.95rem;font-family:inherit;}
+.tabs button.on{background:var(--navy);color:#fff;border-color:var(--navy);font-weight:bold;}
+.panel{display:none;}.panel.on{display:block;}
+h2{color:var(--navyd);font-size:1.1rem;margin:18px 0 10px;border-left:5px solid var(--gold);padding-left:10px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;}
+.field label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:4px;}
+.field input,.field select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:6px;
+  font-size:1rem;font-family:inherit;background:#fff;}
+.field input:focus,.field select:focus{outline:2px solid var(--pale);border-color:var(--blue);}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;margin:14px 0;
+  box-shadow:0 2.5px 6px rgba(159,176,196,.24);}
+.btn{background:var(--navy);color:#fff;border:none;padding:12px 26px;border-radius:8px;
+  font-size:1rem;font-family:inherit;cursor:pointer;margin-top:14px;}
+.btn:hover{background:var(--navyd);}
+.btn.sec{background:#fff;color:var(--navy);border:1px solid var(--navy);}
+.result{border-left:5px solid var(--navy);}
+.result .big{font-size:1.5rem;color:var(--navyd);font-weight:bold;letter-spacing:1px;}
+.tag{display:inline-block;background:var(--pale);color:var(--navyd);border-radius:4px;
+  padding:2px 8px;font-size:.78rem;margin:2px 4px 2px 0;}
+.src{font-size:.78rem;color:var(--muted);margin-top:6px;}
+.warn{color:var(--warn);font-weight:bold;}
+.ok{color:var(--ok);font-weight:bold;}
+table{border-collapse:collapse;width:100%;margin:8px 0;font-size:.9rem;}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;}
+th{background:var(--pale);color:var(--navyd);}
+.drop{border:2px dashed var(--line);border-radius:10px;padding:22px;text-align:center;
+  color:var(--muted);cursor:pointer;background:#fff;}
+.drop.has{border-color:var(--blue);}
+.drop img{max-width:100%;max-height:230px;border-radius:6px;margin-top:8px;}
+footer{position:relative;z-index:1;text-align:center;font-size:.8rem;color:var(--muted);
+  padding:18px;border-top:1px solid var(--grey);}
+.disclaimer{background:#FFF8EC;border:1px solid var(--gold);border-radius:8px;padding:10px 14px;
+  font-size:.85rem;color:#8a5a12;margin-bottom:16px;}
+.scen{cursor:pointer;transition:box-shadow .15s;border-left:5px solid var(--blue);}
+.scen:hover{box-shadow:0 4px 12px rgba(27,79,156,.25);}
+.scen b{color:var(--navyd);font-size:1.02rem;}
+.scen .need{font-size:.82rem;color:var(--muted);margin-top:6px;}
+.scen .go{color:var(--blue);font-size:.85rem;font-weight:bold;margin-top:8px;display:block;}
+.hint{background:var(--pale);color:var(--navyd);border-radius:8px;padding:9px 14px;font-size:.87rem;margin-bottom:14px;}
+ul{margin:6px 0 6px 22px;}
+.spin{display:inline-block;width:18px;height:18px;border:3px solid var(--pale);
+  border-top-color:var(--navy);border-radius:50%;animation:sp 1s linear infinite;vertical-align:middle;}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.spin{animation:none}}
+</style>
+</head>
+<body>
+<div class="wave" aria-hidden="true"></div>
+<header>
+  <h1>Euclid OK 驗配輔助系統<small>螢光染色判讀 × 第一片試片 × 處方建議</small></h1>
+  <div class="brand"><img src="logo.png" alt="HOLY VISION 優立得" onerror="this.style.display='none';this.parentNode.insertAdjacentHTML('beforeend','HOLY VISION<br>優立得')"></div>
+</header>
+<main>
+<div class="disclaimer">本系統為驗配輔助參考工具,所有計算與判讀依據 Euclid 原廠與優立得教材之明文規則;<b>最終試片選擇與處方由驗配醫師決定</b>。</div>
+
+<nav class="tabs">
+  <button class="on" data-p="p0">使用指引</button>
+  <button data-p="p1">試片選擇</button>
+  <button data-p="p7">Topo 驗配</button>
+  <button data-p="p2">螢光評估</button>
+  <button data-p="p3">開立處方</button>
+  <button data-p="p6">戴後追蹤</button>
+  <button data-p="p4">規則出處</button>
+</nav>
+
+<!-- 使用指引 -->
+<section id="p0" class="panel on">
+<h2>患者現在是什麼狀況?點選對應情境即可</h2>
+<p class="src" style="margin-bottom:12px">每個分頁獨立使用,依患者當下階段擇一即可,<b>不需要每頁都操作、也沒有固定順序</b>。</p>
+<div class="grid">
+  <div class="card scen" onclick="goTab('p1')">
+    <b>新患者,還沒戴過片</b>
+    <p style="margin-top:6px">要決定第一片試片的 AC、直徑與片種。</p>
+    <span class="need">需要準備:驗光單度數(SPH)+ K 值(手動輸入或上傳原始 topo 圖自動帶入)</span>
+    <span class="go">→ 前往「試片選擇」</span>
+  </div>
+  <div class="card scen" onclick="goTab('p7')">
+    <b>用 topo 圖驗配(免手動輸入 K 值)</b>
+    <p style="margin-top:6px">上傳原始 topo,AI 讀取 K 值 → 試片與處方建議,並產生模擬螢光染色示意圖。</p>
+    <span class="need">需要準備:原始 topo 圖 + 驗光單度數(SPH)</span>
+    <span class="go">→ 前往「Topo 驗配」</span>
+  </div>
+  <div class="card scen" onclick="goTab('p2')">
+    <b>試片剛戴上,要看鬆緊</b>
+    <p style="margin-top:6px">診間評估配適:理想/偏鬆/偏緊/偏位,以及對應怎麼調整。</p>
+    <span class="need">需要準備:螢光染色照片(可加 topo 圖輔助)</span>
+    <span class="go">→ 前往「螢光評估」</span>
+  </div>
+  <div class="card scen" onclick="goTab('p3')">
+    <b>配適確認 OK,要訂片</b>
+    <p style="margin-top:6px">計算正式處方度數並產生訂片字串(含片種、顏色)。</p>
+    <span class="need">需要準備:試片度數 + 戴片 OR 結果 + 加深值</span>
+    <span class="go">→ 前往「開立處方」</span>
+  </div>
+  <div class="card scen" onclick="goTab('p6')">
+    <b>已配戴一段時間,回診/效果不好</b>
+    <p style="margin-top:6px">用戴後 topo 判斷治療型態,依配戴時長給對應處置(未滿兩週原則上先觀察)。</p>
+    <span class="need">需要準備:戴後 topo 圖(建議差異圖)+ 配戴時長 + 殘餘度數</span>
+    <span class="go">→ 前往「戴後追蹤」</span>
+  </div>
+</div>
+<p class="src" style="margin-top:14px">常見動線參考:試片選擇(或 Topo 驗配)→ 螢光評估 →(必要時換試片再評估)→ 開立處方;戴後回診則直接用「戴後追蹤」。「規則出處」列出全部內建規則與文件依據,供查證。</p>
+</section>
+
+<!-- 試片選擇 -->
+<section id="p1" class="panel">
+<div class="hint">使用時機:<b>新患者尚未戴片</b>,手動輸入驗光單與 K 值決定第一片試片與片種。若手邊有 topo 圖,可改用「Topo 驗配」分頁自動讀取。</div>
+<h2>驗光單與角膜資料(單眼)</h2>
+<div class="grid">
+  <div class="field"><label>眼別</label><select id="eye"><option>OD 右眼</option><option>OS 左眼</option></select></div>
+  <div class="field"><label>球面度數 SPH(D,負值)</label><input id="sph" type="number" step="0.25" placeholder="-3.75"></div>
+  <div class="field"><label>柱面度數 CYL(D,負值)</label><input id="cyl" type="number" step="0.25" placeholder="-1.00"></div>
+  <div class="field"><label>平K FK(D)</label><input id="fk" type="number" step="0.25" placeholder="44.00"></div>
+  <div class="field"><label>陡K SK(D)</label><input id="sk" type="number" step="0.25" placeholder="45.50"></div>
+  <div class="field"><label>HVID(mm,建議以 topo 卡尺水平量測)</label><input id="hvid" type="number" step="0.1" placeholder="11.4"></div>
+  <div class="field"><label>近視年增速(近視控制用,選填)</label>
+    <select id="prog"><option value="">未評估</option><option value="slow">慢:&lt;0.50D/年 或眼軸&lt;0.2mm/年</option>
+    <option value="mid">中:0.50–1.00D/年 或眼軸0.2–0.4mm/年</option>
+    <option value="fast">快:&gt;1.00D/年 或眼軸&gt;0.4mm/年</option></select></div>
+  <div class="field"><label>Topo:limbus-to-limbus 散光 / 8mm弦高度差&gt;25µm(選填)</label>
+    <select id="l2l"><option value="">未評估</option><option value="y">是</option><option value="n">否</option></select></div>
+  <div class="field"><label>散光軸度(選填,自動判斷順/逆散)</label><input id="axDeg" type="number" step="1" min="0" max="180" placeholder="175" onchange="autoAxis()"></div>
+  <div class="field"><label>散光軸向(可自動帶入)</label>
+    <select id="axis"><option value="">未評估</option><option value="wtr">順散 WTR(軸約180±30)</option><option value="atr">逆散 ATR(軸約90±30)</option><option value="obl">斜散</option></select></div>
+  <div class="field"><label>暗處瞳孔直徑(mm,選填,低照度下量測)</label><input id="pupil" type="number" step="0.5" placeholder="5.5"></div>
+  <div class="field"><label>e 值(選填)</label><input id="ev" type="number" step="0.05" placeholder="0.50"></div>
+</div>
+<div class="card" style="margin-top:14px">
+  <b>角膜矢高(sag)估算器(學理計算,選填)</b>
+  <p class="src" style="margin:6px 0">以圓錐曲線模型估算兩主徑線在指定弦長的矢高與高度差,適用於無高度圖時的散光片預估;公式 z=y²/(r(1+√(1−(1+Q)y²/r²))),Q=−e²。結果為幾何估算,與實測高度圖有差異時以高度圖為準。</p>
+  <div class="grid">
+    <div class="field"><label>平K(D,可沿用上方欄位)</label><input id="sgFk" type="number" step="0.25" placeholder="44.00"></div>
+    <div class="field"><label>陡K(D)</label><input id="sgSk" type="number" step="0.25" placeholder="45.50"></div>
+    <div class="field"><label>e 值(未量測用 0.50)</label><input id="sgE" type="number" step="0.05" value="0.50"></div>
+    <div class="field"><label>弦長(mm,AC 著陸帶約 8)</label><input id="sgC" type="number" step="0.5" value="8"></div>
+  </div>
+  <button class="btn sec" onclick="calcSag()">計算矢高</button>
+  <div id="sagOut"></div>
+</div>
+<div class="card" style="margin-top:14px">
+  <b>8mm 弦高度差計算器(選填,topo 高度圖判斷散光片,較 K 值換算精準)</b>
+  <p class="src" style="margin:6px 0">於 topo 高度圖(elevation map)讀取 8mm 弦長上兩主徑線各兩端點的高度值(µm),輸入後計算主徑線平均高度差(SHD)。</p>
+  <div class="grid">
+    <div class="field"><label>平K 徑線端點 1(µm)</label><input id="e1" type="number" step="1" placeholder="10"></div>
+    <div class="field"><label>平K 徑線端點 2(µm)</label><input id="e2" type="number" step="1" placeholder="-3"></div>
+    <div class="field"><label>陡K 徑線端點 1(µm)</label><input id="e3" type="number" step="1" placeholder="-24"></div>
+    <div class="field"><label>陡K 徑線端點 2(µm)</label><input id="e4" type="number" step="1" placeholder="-53"></div>
+  </div>
+  <button class="btn sec" onclick="calcSHD()">計算高度差</button>
+  <div id="shdOut"></div>
+</div>
+<button class="btn" onclick="calcTrial()">計算第一片試片</button>
+<div id="r1"></div>
+</section>
+
+<!-- Topo 驗配 -->
+<section id="p7" class="panel">
+<div class="hint">使用時機:<b>以原始 topo 圖直接驗配</b>——AI 讀取圖上 K 值 → 試片/片種/處方建議,並產生模擬螢光染色示意圖。(本頁需啟用 AI;免費版請於「試片選擇」手動輸入 K 值,結果相同)</div>
+<div class="card" style="border-left:5px solid var(--blue)">
+  <b>Topo 拍攝品質檢查(判讀前先確認)</b>
+  <ul style="margin-top:8px">
+    <li>拍攝前請患者完整眨眼 2–3 次,使淚膜均勻(淚膜破裂會造成假性不規則)</li>
+    <li>對焦準確、注視固定,環紋(mires)涵蓋完整,無眼瞼/睫毛陰影——必要時請患者睜大或輕提上瞼</li>
+    <li>連拍至少 3 張取一致者(SimK 差異宜 <0.25D),差異過大重拍</li>
+    <li>戴後追蹤圖須與基線同一儀器、同一條件拍攝,差異比較才有效;偏位/中央島判讀以軸向差異圖為準</li>
+  </ul>
+  <div class="src">通用臨床實務 + Euclid 地形圖文章(差異圖用法)</div>
+</div>
+<h2>上傳原始 topo 圖</h2>
+<div class="grid">
+  <div>
+    <div class="drop" id="dropB" onclick="pickImg('bt')">點擊上傳<b>原始(未配戴)topo 圖</b><br><span style="font-size:.8rem">AI 只抄錄圖上實際印出的 SimK/HVID,讀不到會提示手動輸入</span><div id="prevB"></div></div>
+    <input id="fileB" type="file" accept="image/*" hidden>
+  </div>
+  <div>
+    <div class="field"><label>球面度數 SPH(D,負值,驗光單數值)</label><input id="tSph" type="number" step="0.25" placeholder="-3.75"></div>
+    <div class="field" style="margin-top:8px"><label>柱面度數 CYL(D,選填,僅紀錄)</label><input id="tCyl" type="number" step="0.25" placeholder="-1.00"></div>
+    <div class="field" style="margin-top:8px"><label>近視年增速(選填)</label>
+      <select id="tProg"><option value="">未評估</option><option value="slow">慢:&lt;0.50D/年</option><option value="mid">中:0.50–1.00D/年</option><option value="fast">快:&gt;1.00D/年</option></select></div>
+    <div class="field" style="margin-top:8px"><label>額外加深(預估處方用)</label>
+      <select id="tExtra"><option value="-0.50">-0.50</option><option value="-0.75" selected>-0.75(常用)</option><option value="-1.00">-1.00</option><option value="-1.25">-1.25</option><option value="-1.50">-1.50</option><option value="-1.75">-1.75</option><option value="-2.00">-2.00</option></select></div>
+  </div>
+</div>
+<button class="btn" onclick="analyzeTopoFit()">AI 讀取 topo 並產生建議</button>
+<div id="r7"></div>
+</section>
+
+<!-- ② AI 判讀 -->
+<section id="p2" class="panel">
+<div class="hint">使用時機:<b>試片已戴上</b>,在診間以螢光染色評估鬆緊與配適;判讀後附原廠調整規則。</div>
+<div class="card" style="border-left:5px solid var(--blue)">
+  <b>初次配鏡檢查清單(Euclid Module 4)</b>
+  <ul style="margin-top:8px">
+    <li>配鏡前:鏡片以 GP 核可藥水完成清潔、消毒、潤濕</li>
+    <li>裂隙燈(有/無螢光染色):鏡片大致置中、眨眼有移動、早期 bulls-eye 圖形形成</li>
+    <li><b class="warn">不予配發</b>:鏡片完全不動、移動過度、或患者立即疼痛 → 取下、重新清潔、重戴再評估</li>
+    <li>衛教:戴取方式(I&R)、清潔消毒流程、人工淚液點用</li>
+    <li>吸附處理衛教(必教):取片前先點人工淚液(黏稠型優於生理食鹽水)、以下眼瞼推動鏡片確認移動後再取;<b class="warn">鏡片吸附時勿以吸棒硬拔</b>——負壓會造成瞳孔中央上皮損傷與晨間視力模糊</li>
+    <li>官方配戴時程:睡前 15–20 分鐘戴入,確保 8–10 小時閉眼配戴;「有疑慮就取下」——異物感先取下清潔重戴,持續則勿配戴</li>
+    <li>預約:隔日晨間回診(醒後數小時內),<b>戴著鏡片來</b>——評估置中與鏡片吸附</li>
+  </ul>
+</div>
+<h2>上傳螢光染色圖</h2>
+<div class="drop" id="dropF" onclick="pickImg('fl')">點擊上傳<b>螢光染色圖</b><div id="prevF"></div></div>
+<input id="fileF" type="file" accept="image/*" hidden>
+<h2>試片背景資訊(提供 AI 判讀脈絡,選填)</h2>
+<div class="grid">
+  <div class="field"><label>目前試片(度數/AC/直徑)</label><input id="ctxLens" placeholder="-4.00 / 44.25 / 10.6"></div>
+  <div class="field"><label>是否為散光片</label><select id="ctxToric"><option value="n">否</option><option value="y">是</option></select></div>
+  <div class="field"><label>戴片時間</label><select id="ctxWear"><option>戴片後即時(診間評估)</option><option>過夜配戴後回診</option></select></div>
+</div>
+<div class="grid" style="margin-top:6px">
+  <div><button class="btn" onclick="analyze()">AI 判讀(需啟用 AI 功能)</button></div>
+  <div>
+    <div class="field"><label>或:醫師手動判讀後選擇分類(免費)</label>
+      <select id="flManual"><option value="">— 選擇判讀結果 —</option><option>理想</option><option>偏鬆(過平)</option><option>偏緊(過陡)</option><option>上方偏位</option><option>下方偏位</option><option>側向偏位</option><option>中央島/Vaulting</option></select></div>
+    <button class="btn sec" onclick="manualFl()">顯示對應調整規則</button>
+  </div>
+</div>
+<div id="r2"></div>
+</section>
+
+<!-- ③ 處方 -->
+<section id="p3" class="panel">
+<div class="hint">使用時機:<b>配適已確認理想</b>,依戴片 OR 計算正式處方並產生訂片字串。</div>
+<h2>處方計算</h2>
+<p class="src" style="margin-bottom:10px">公式:target = 試片度數 + 戴片 OR + 額外加深(−0.50~−2.00D,可自訂更深,依醫師針對患者需求,常用 −0.75)。</p>
+<div class="grid">
+  <div class="field"><label>片種</label><select id="pProd"></select></div>
+  <div class="field"><label>試片度數(D,負值)</label><input id="pTrial" type="number" step="0.25" placeholder="-4.00"></div>
+  <div class="field"><label>戴片 OR 球面(D)</label><input id="pOR" type="number" step="0.25" placeholder="-0.25" value="0"></div>
+  <div class="field"><label>戴片 OR 柱面(D,選填)</label><input id="pORc" type="number" step="0.25" placeholder="-0.50"></div>
+  <div class="field"><label>額外加深</label>
+    <select id="pExtra"><option value="-0.50">-0.50</option><option value="-0.75" selected>-0.75(常用)</option><option value="-1.00">-1.00</option><option value="-1.25">-1.25</option><option value="-1.50">-1.50</option><option value="-1.75">-1.75</option><option value="-2.00">-2.00</option><option value="custom">自訂(可超過 -2.00)…</option></select></div>
+  <div class="field" id="pExtraCustomWrap" style="display:none"><label>自訂加深值(D,負值,可超過 -2.00)</label><input id="pExtraCustom" type="number" step="0.25" placeholder="-2.25"></div>
+  <div class="field"><label>最終 AC(D)</label><input id="pAC" type="number" step="0.25" placeholder="44.25"></div>
+  <div class="field"><label>散光片 Toricity C(D,非散光片留空)</label><input id="pC" type="number" step="0.25" placeholder="1.00"></div>
+  <div class="field"><label>直徑(mm)</label><input id="pDia" type="number" step="0.1" placeholder="10.6"></div>
+  <div class="field"><label>鏡片顏色</label><select id="pColor"><option value="G">G 綠</option><option value="B">B 藍</option><option value="V">V 紫</option></select></div>
+</div>
+<button class="btn" onclick="calcRx()">產生處方</button>
+<div id="r3"></div>
+</section>
+
+<!-- 戴後追蹤 -->
+<section id="p6" class="panel">
+<div class="hint">使用時機:<b>患者已配戴一段時間回診</b>(或反映效果不佳),以戴後 topo 判斷並依配戴時長給處置。</div>
+<h2>戴後追蹤判讀</h2>
+<div class="grid">
+  <div>
+    <div class="drop" id="dropP" onclick="pickImg('pt')">點擊上傳<b>戴後 topo 圖</b>(強烈建議用軸向差異圖 difference map)<div id="prevP"></div></div>
+    <input id="fileP" type="file" accept="image/*" hidden>
+  </div>
+  <div>
+    <div class="field"><label>已配戴時長</label>
+      <select id="ptDur"><option value="1">隔日(首夜後晨間)</option><option value="7">1 星期</option><option value="14">2 星期</option><option value="21">3 星期</option><option value="30">1 個月</option><option value="90">3 個月</option></select></div>
+    <div class="field" style="margin-top:8px"><label>目前殘餘度數(D,無殘餘填 0)</label><input id="ptRes" type="number" step="0.25" value="0" placeholder="-0.50"></div>
+    <div class="field" style="margin-top:8px"><label>目前處方 target(D,選填)</label><input id="ptTarget" type="number" step="0.25" placeholder="-4.75"></div>
+    <div class="field" style="margin-top:8px"><label>目前 AC(D,供調整值計算)</label><input id="ptAC" type="number" step="0.25" placeholder="44.25"></div>
+    <div class="field" style="margin-top:8px"><label>目前鏡片直徑(mm)</label><input id="ptDia" type="number" step="0.1" placeholder="10.6"></div>
+    <div class="field" style="margin-top:8px"><label>HVID(mm,選填,用於直徑上限驗證)</label><input id="ptHvid" type="number" step="0.1" placeholder="11.4"></div>
+    <div class="field" style="margin-top:8px"><label>是否為散光片 / 角膜散光</label><select id="ptToric"><option value="n">否</option><option value="y">是</option></select></div>
+    <div class="field" style="margin-top:8px"><label>取片後角膜有無點狀染色(鑑別真/假中央島)</label><select id="ptStain"><option value="">未檢查</option><option value="n">無染色</option><option value="y">有染色</option></select></div>
+    <div class="field" style="margin-top:8px"><label>視力抱怨時段(選填,啟用鑑別樹)</label>
+      <select id="ptSymTime"><option value="">無特別抱怨</option><option value="am">晨間:取片後數小時內模糊</option><option value="pm">午後起視力逐漸下降</option><option value="night">夜間眩光/光暈</option><option value="all">全天視力不佳</option></select></div>
+    <div class="field" style="margin-top:8px"><label>患者主觀視力/症狀補充(選填)</label><input id="ptSym" placeholder="例:白天視力浮動、夜間眩光"></div>
+  </div>
+</div>
+<div class="card" id="visitCheck" style="border-left:5px solid var(--blue)"></div>
+<div class="grid" style="margin-top:6px">
+  <div><button class="btn" onclick="analyzePost()">AI 判讀戴後 topo(需啟用 AI 功能)</button></div>
+  <div>
+    <div class="field"><label>或:醫師手動判讀後選擇分類(免費)</label>
+      <select id="ptManual"><option value="">— 選擇判讀結果 —</option><option>理想</option><option>上方偏位</option><option>下方偏位</option><option>側向偏位</option><option>中央島/Vaulting</option><option>治療區偏小</option><option>橢圓/不完整治療區</option></select></div>
+    <button class="btn sec" onclick="manualPost()">顯示處置建議與進度對照</button>
+  </div>
+</div>
+<div id="r6"></div>
+</section>
+
+<!-- 規則出處 -->
+<section id="p4" class="panel">
+<h2>本系統內建規則與出處</h2>
+<div class="card"><table>
+<tr><th>規則</th><th>內容</th><th>出處</th></tr>
+<tr><td>AC 選擇</td><td>角膜散光 0–0.50D:FK−0.25;0.75–1.25D:on FK;1.50–2.00D:FK+0.25(螢光圖形不佳可改散光片)</td><td>優立得《歐基里德OK片基礎驗配》</td></tr>
+<tr><td>產品線</td><td>EM(TP≤−6.00)/ ETR(TP≤−5.00,角散)/ TZ(&gt;−6.00、−5~−6求更佳效果、FK&lt;41.00、增速快)/ TTR</td><td>優立得《歐基里德OK片基礎驗配》</td></tr>
+<tr><td>直徑</td><td>預設 HVID−1mm(台灣端教材);原廠上限 HVID−0.6mm;範圍 9.8–11.6mm;FK≤40.00 且 HVID≥11.6 → 11.0mm 起</td><td>優立得教材+Euclid《Determining OAD》</td></tr>
+<tr><td>8mm 弦高度差(SHD)法</td><td>OK 片配適取決於 AC 著陸之周邊 8mm 弦高度差(K 值僅量中央 3mm):兩主徑線各取兩端點高度平均後相減,|SHD|>25µm 需散光設計(例:(10+(−3))/2 −((−24)+(−53))/2 = 35µm);中央型散光可先用球面設計;訂 Toric 需提供 SHD 值;SHD→toricity 依高度差對照(15µm≈0.50D)</td><td>Euclid 官網《How Can Corneal Topography Aid In Orthokeratology Fitting》+ Module 3 + ABB</td></tr>
+<tr><td>Toricity 換算</td><td>角散 1.00→0.75/1.25→1.00/1.50→1.00/1.75→1.25/2.00→1.25/2.25→1.50/2.50→1.75/2.75→1.75/3.00→2.00/3.25→2.00/3.50→2.25</td><td>Euclid《Estimating Corneal Elevation》</td></tr>
+<tr><td>POZ</td><td>進展慢→6.2;中→5.8;快→5.4(需散光片→5.6);最大 6.6</td><td>Euclid《POZ Recommendations》(2022/7 臨床意見)</td></tr>
+<tr><td>理想螢光配適</td><td>眨眼移動約1–2mm、置中不壓迫輪部、瞳孔周圍螢光環、360°足夠 edge lift</td><td>Euclid/ABB《Troubleshooting Tips for Ortho-K》</td></tr>
+<tr><td>下方偏位</td><td>過緊/垂直sag過高 → AC1+AC2 放平0.1mm(0.50D);散光片或角膜散光者改減 toricity 15µm(≈0.50D)</td><td>Euclid 認證 Module 5 + ABB</td></tr>
+<tr><td>上方偏位</td><td>過平/sag不足 → AC1+AC2 調陡0.1mm(0.50D);散光片可增 toricity 0.50D</td><td>Euclid 認證 Module 5</td></tr>
+<tr><td>側向偏位</td><td>直徑太小 → 直徑加0.4mm(不可&gt;HVID−0.6);HVID 不允許時考慮 0.75D 散光設計</td><td>Euclid 認證 Module 5 + ABB</td></tr>
+<tr><td>中央島/Vaulting</td><td>sag 過高、RC 下中央淚池無 bulls-eye → RC 放平0.2mm(1.00D)</td><td>Euclid 認證 Module 5 + ABB</td></tr>
+<tr><td>矯正不足</td><td>topo/螢光皆理想但殘餘度數 → target 依殘餘度數加深</td><td>Euclid 認證 Module 5 + ABB</td></tr>
+<tr><td>戴後追蹤時程守門</td><td>配戴&lt;14天:非安全疑慮不換片(治療需7–14天到位);14–30天間 topo 理想但有殘餘:可能仍會進步,滿1個月再評估加深;≥1個月:依判讀套用調整規則;鏡片>1年先評估老化變形。中央島/Vaulting 須以軸向差異圖確認,單張戴後圖判讀降信心。</td><td>Euclid 認證 Module 4、5 + ABB</td></tr>
+<tr><td>處方公式與格式</td><td>target = 試片 + OR + 加深(−0.50~−2.00,可自訂更深,常用−0.75);球面片 T-x.xx/AC/直徑/顏色;散光片 T-x.xx/AC/C-x.xx/直徑/顏色;顏色 G綠/B藍/V紫</td><td>優立得台灣端實務(Frank 提供)</td></tr>
+<tr><td>片種度數規格</td><td>EM 標準140:球面−6.00/散光−5.00(藍綠紫);EM MAX240:同左(藍綠);TZ 標準140:球面−8.00/散光−6.00(藍綠紫);TZ MAX240:球面散光−6.00(藍綠);Standard Infinite240:−5.00(藍綠);Myllo Infinite240:−10.50(藍綠);XO2 180 系列準備中(約2026/10)。TP>−8.00 唯 Myllo Infinite240 可配。MyEuclid 為數位驗配獨立流程(topo 直接拍圖訂片),不列入本試片選片。</td><td>《優立得全品項內外價 V5》(權威版本)+ Frank 確認</td></tr>
+<tr><td>候選篩選(理想/挑戰)</td><td>理想:近視−1.00~−5.00、散光&lt;1.50 WTR 或&lt;0.75 ATR、e值0.3–0.7、FK 40.00–46.00、HVID&gt;11.0。挑戰:近視&gt;−5.00(超FDA適應)、WTR&gt;1.50、ATR&gt;0.75、散光≥球面50%(殘餘散光)、大平角膜(FK&lt;40+HVID&gt;12.5,反應慢易偏位)、陡角膜(FK&gt;46,易偏位)、暗處瞳孔&gt;6mm(眩光)、HVID&lt;11.0(最小鏡片9.8mm)</td><td>Euclid 認證 Module 3</td></tr>
+<tr><td>禁忌症</td><td>活動性角膜感染、前房急性/亞急性發炎;角膜/結膜/眼瞼疾病、外傷或異常;重度乾眼;角膜知覺低下;任何因隱形眼鏡配戴而惡化之病況;對藥水成分過敏;IOP 異常</td><td>Euclid 認證 Module 3 + FDA package insert</td></tr>
+<tr><td>鏡片壽命</td><td>鏡片效期為製造後一年,建議每年換片;配戴超過一年可能變形(殘餘球面誤差、誘發散光、偏位、不適);超過兩年建議先換新片再判斷;調整可折衷(如殘餘−1.00先調−0.50)</td><td>ABB《Troubleshooting》引 Euclid 臨床指引</td></tr>
+<tr><td>真性/假性中央島鑑別(專業文獻)</td><td>真性:差異圖中央峰值>0.00D、紅環置中、取片後無染色 → 過陡,RC 放平(同 frowny 處置);假性:中央峰值<0.00D、常伴 smiley-face、取片後點狀染色、placido 環紋扭曲 → 過平、上皮受壓,處置<b>相反</b>:增加 sag(AC 調陡)。鑑別前勿調整。</td><td>Contact Lens Spectrum 2020/3(Frogozo)</td></tr>
+<tr><td>螢光判讀補充(專業文獻)</td><td>BOZR 下理想淨空僅 5–10µm,低於螢光可視門檻約 20µm,中央暗區屬正常預期外觀,不可單憑中央偏暗判偏鬆;理想配適=BOZR 中央 alignment、RC 全區淨空、AC 著陸、周邊淨空良好淚液交換</td><td>Contact Lens Spectrum 2020/3 引 Young 1998</td></tr>
+<tr><td>安全監測(專業文獻)</td><td>上皮厚約 50µm,角膜變化超過 50µm 應懷疑 ectasia;取片後角膜應乾淨——點狀染色/負染色/基質混濁代表機械性接觸或缺氧;偏位可致治療不均、日內回退、誘發不規則散光、基質水腫、近視控制效果下降</td><td>Contact Lens Spectrum 2020/3</td></tr>
+<tr><td>加深值文獻佐證</td><td>各家設計 Jessen factor 介於 0.50–3.00D flatter than K,確保全日裸視品質——與台灣端 −0.50~−2.00 加深實務一致</td><td>Contact Lens Spectrum 2020/3(文獻回顧)</td></tr>
+<tr><td>散光周邊弧啟用(專業文獻)</td><td>中央散光>1.00D 且/或散光延伸至輪部 → 建議 toric periphery;球面片在散光角膜上夜間 rocking → 治療區橢圓/不完整、邊緣淚液不均;紅環淺/不均=中央壓平不足,處置為增加 sag(給組織空間移往中周邊)而非降 sag</td><td>Contact Lens Spectrum 2024/3(Potter)</td></tr>
+<tr><td>近視控制優化(專業文獻)</td><td>縮小 BOZD 使中周邊陡化環更多落於瞳孔內,可顯著減緩眼軸增長(VOLTZ 2年RCT),但夜間眩光抱怨增加,不建議首片即用小治療區,待配適穩定後再導入;輕度治療區偏位若視力可接受,對近視控制可能有利,可暫不改片</td><td>CLS 2024/3 引 Guo 2023(VOLTZ)、Chu 2023、Li 2022</td></tr>
+<tr><td>高度數期望管理(專業文獻)</td><td>超過適應範圍之高度數:回診與換片次數較多、治療區較小;K 偏平之軸性近視難達足量降度;角膜過陡者鏡片易於陡峰上不穩;部分降度仍具近視控制價值(HM-PRO);過渡期提供部分矯正眼鏡/日拋</td><td>CLS 2024/3 引 Charm & Cho 2013</td></tr>
+<tr><td>依從性與換片紀律(專業文獻)</td><td>判定治療失敗前先驗證每晚配戴與睡眠時數;置中良好時部分問題隨配戴天數自行改善,參數勿頻繁更動;前一副鏡片塑形殘留會妨礙新片置中,必要時 washout 重新驗配</td><td>Contact Lens Spectrum 2024/3</td></tr>
+<tr><td>Euclid 五弧設計架構</td><td>由中心至周邊(標準 10.6mm):BC 較角膜平、依降度計算,標準寬 6.2mm → 有效治療區 ≥5mm、正壓壓薄中央上皮;RC 顯著較陡,環狀淚液庫、負壓使中周邊上皮增厚;<b>AC1 半徑≈平K,AC2 較 AC1 平 1.50D</b>(貼合周邊漸平角膜、負責置中);周邊弧最平,提供 edge lift 供舒適/移動/淚液交換。塑形約兩週完成,完全可逆</td><td>Euclid 認證 Module 2</td></tr>
+<tr><td>Euclid Toric 本質</td><td>BC 與周邊弧維持對稱,僅 RC 與 AC1/AC2 非對稱貼合散光角膜——<b>不提供散光光學矯正</b>,作用為定位穩定與改善整體結果;殘餘散光問題須另評估(50% 規則)</td><td>Euclid 認證 Module 2</td></tr>
+<tr><td>材料與 Dk</td><td>Emerald/Emerald Toric = Oprifocon A,Dk 85(ISO/Fatt);MAX/MAX Toric = Tisilfocon A,Dk 180(ISO/Fatt);FDA PMA P040029、P010062(2004 核准)。注意:台灣 V5 標示透氧「140/240」與美方「85/180(ISO/Fatt)」量測基準不同,待與原廠釐清對照關係後於文件統一</td><td>Euclid 認證 Module 2 + V5(併列待釐清)</td></tr>
+<tr><td>三因子訂片與追溯</td><td>Euclid 免試片訂片僅需三參數:Rx、K 值、HVID,交由原廠演算法產出鏡片(散光片另附 SHD);每片鏡片邊緣有唯一雷射編號,可追溯至患者/眼別/訂單</td><td>Euclid 認證 Module 3 + 官網</td></tr>
+<tr><td>初次配鏡與回診檢查表</td><td>配鏡:清消潤濕→裂隙燈(±螢光)確認置中/移動/早期bulls-eye→不動、過動或立即疼痛不予配發(重清重戴再評)→衛教 I&R 與藥水→隔日晨間回診。隔日:戴鏡(移動/裸視/BCVA/OR)+取鏡(BCVA/驗光/topo/角膜健康)。時程:1週晨間→1個月傍晚→6個月傍晚→1年;傍晚檢查評估日內回退</td><td>Euclid 認證 Module 4</td></tr>
+<tr><td>收貨核對(包裝標籤)</td><td>標籤載明:製造/效期、片數、材料與顏色、各弧參數(BC/RC/AC1/AC2/PC/BVP/CT 附弦徑)、藥水批號、鏡片唯一雷射編號、UDI 條碼、材料批號、<b>患者 K 值與 target Rx</b>——收貨時核對標籤 K 值/target 與訂單一致,並可登錄於驗配紀錄系統供追溯</td><td>Euclid 認證 Module 4</td></tr>
+<tr><td>台廠適用性聲明</td><td>優得(GJ TEK)Standard/Myllo 系列為 Euclid 協助設計之台灣製品項,本系統之 Euclid 設計原理與調整規則適用於全品項;台灣品項規格(度數/顏色/透氧標示)以 V5 為準</td><td>Frank 確認(2026/8)</td></tr>
+<tr><td>FDA 臨床試驗數據(P010062)</td><td>378眼收案、210 core 眼分析(成人17–64,9個月):平均降度依初始度數 0~−1:1.15/−1~−2:1.52/−2~−3:2.39/−3~−4:3.29/−4~−5:3.85/−5~−6:4.67/>−6:4.88(殘餘−1.25);73% 達20/20、95% 達20/40;80% 在target±0.50D、93% ±1.00D;>−4.00 精準度下降(60% ±0.50D);初始>−3.00 視覺干擾較多(視力不佳17%、眩光鬼影9%);散光變化:35%不變、43%減少、22%增加(14% 角膜柱面增>1D);重大不良事件3%、≥2行BCVA下降1%,均康復</td><td>FDA P010062c package insert</td></tr>
+<tr><td>官方配戴與維持時程</td><td>第一晚:睡前15–20分鐘戴入、閉眼8–10小時;「有疑慮就取下」;隔日晨間戴鏡回診評估置中與吸附;適應後可個別化維持配戴頻率——若取片後視力衰退,須調整夜戴頻率以維持效果;效果非永久,停戴即逐步回復,須依處方時程持續配戴。平均配戴 8–10 小時/晚,時數與矯正結果無明顯關聯(該範圍內)</td><td>FDA P010062c</td></tr>
+<tr><td>鏡片保養紅線</td><td>僅可化學消毒——加熱系統會使鏡片變形;清潔須於掌心進行(勿以拇指與手指搓,防翹曲);每次取下必須清潔+消毒(兩者不可互相取代);鏡片盒定期清潔風乾與更換;化學噴濺入眼:大量清水沖洗、取鏡、立即就醫;吸附(不動)鏡片依 sticking lens 流程處理,持續不動立即回診</td><td>FDA P010062c</td></tr>
+<tr><td>原廠參數範圍(oprifocon A)</td><td>直徑 9.6–11.6mm;中心厚度 0.20–0.32mm;BC 7.30–10.15mm;RC 5.0–9.0mm(較BC陡、幅度依降度);AC1 7.0–9.0mm(≈平K);AC2 7.25–9.25mm;周邊弧 9.00–15.00mm;BVP +1.50~−5.00D;材料 Boston Equalens II,含水<1%、含UV吸收劑</td><td>FDA P010062c</td></tr>
+<tr><td>弧度算法與換算</td><td>AC 選擇依角膜平K選片(D,三檔散光規則);曲率換算 r(mm)=337.5/K(D);調整級距換算 0.1mm=0.50D、0.05mm=0.25D。(均K+0.4mm 法依 Frank 指示不採用)</td><td>優立得《歐基里德OK片基礎驗配》+ 通用光學換算</td></tr>
+<tr><td>角膜矢高學理估算</td><td>圓錐曲線模型 z=y²/(r(1+√(1−(1+Q)y²/r²))),Q=−e²;以兩主徑線 K 值+e 值估算指定弦長矢高差,供無高度圖時的散光片初判;假設兩徑線同 e 值,屬幾何估算,實測高度圖優先</td><td>幾何光學標準公式(學理層,非原廠文件)</td></tr>
+<tr><td>隔日回診判讀原則</td><td>首夜後未全矯正與置中未達理想屬官方預期之正常現象——除安全徵候(吸附、明顯染色、疼痛)外不做調整,續戴至 1 週回診;隔日回診須戴鏡報到,評估置中與吸附</td><td>Euclid 認證 Module 4 + FDA P010062c</td></tr>
+<tr><td>Topo 拍攝品質標準</td><td>拍攝前完整眨眼 2–3 次均勻淚膜;環紋涵蓋完整無眼瞼陰影;連拍 ≥3 張取一致(SimK 差 <0.25D);追蹤圖與基線同儀器同條件;AI 讀值時同步回報影像品質問題,欠佳建議重拍</td><td>通用臨床實務 + Euclid 地形圖文章</td></tr>
+<tr><td>戴片 OR 柱面提示</td><td>OR 柱面 ≥0.75D:殘餘散光偏高,回檢置中與 50% 規則、評估散光設計;target 公式僅計入 OR 球面,散光處置由醫師判斷(系統提示層,非原廠明文)</td><td>臨床提示(與 Module 3 50% 規則連動)</td></tr>
+<tr><td>時段別視力抱怨鑑別(專業文獻)</td><td>晨間模糊=過矯或取片吸附損傷;午後下降=先排除真性中央島,再查睡眠(7–8h)、午睡未戴鏡(30分鐘即加速回退,建議戴鏡午睡)、回退快者增加壓縮量;夜間眩光=排除配適後屬瞳孔問題(brimonidine/夜用低度眼鏡/瞳孔變動大者低劑量atropine 0.025–0.05%,由醫師處方);全天不佳=初始K值誤差或角膜反應異常;無topo治療痕跡+自述有戴=疑依從性/午睡。視力標準:單眼≥20/25、雙眼可達20/20</td><td>RCCL 2025/2(Simard/Michaud)</td></tr>
+<tr><td>補正比例文獻註記</td><td>鏡片曲率變化不完全轉譯為角膜塑形量:欲增加−1.00D 矯正效果,設計端 BOZR 常需約 1.5 倍變化(引 Lau 2020)——Euclid 由原廠演算法處理,診所端僅需回報殘餘量</td><td>RCCL 2025/2</td></tr>
+<tr><td>鐵質沉積環</td><td>治療區周圍褐色 iron ring/pigmented arc:長期配戴之良性變化、治療穩定表徵,幾乎所有患者長期可見,無需處置;可先向家長預告以免恐慌</td><td>RCCL 2025/2 引 Cho 2002 等</td></tr>
+<tr><td>吸附與取片安全</td><td>取片前點人工淚液(黏稠型較生理食鹽水更保護上皮)、以下眼瞼推動解除吸附;吸附時以吸棒硬拔會致瞳孔中央上皮損傷與晨間視力模糊;每次回診覆核患者是否仍照做、藥水是否改用低黏稠品</td><td>RCCL 2025/2 引 Carracedo 2018</td></tr>
+<tr><td>結膜擦傷與周邊染色</td><td>邊緣過陡+夜間快速動眼期鏡片滑至較平鞏膜 → 結膜擦傷(疼痛+局部紅)→ 增加 edge lift;周邊染色:淺層可觀察,伴陡著陸弧與吸附史 → 放平著陸弧</td><td>RCCL 2025/2</td></tr>
+<tr><td>鏡片老化機轉</td><td>老化使弧度改變(著陸弧典型變陡)、淚液庫蛋白沉積降低液壓塑形效果、生物膜致發炎並增加微生物角膜炎風險;雙氧水系統控菌有效,冷化學系統併用清潔劑同效;按時換片可預防多數 troubleshooting</td><td>RCCL 2025/2</td></tr>
+<tr><td>GPC 與回診眼瞼檢查</td><td>巨乳突結膜炎可於非過敏季發生(有無沉積皆可能):回診應翻轉眼瞼檢查、篩查上皮下浸潤;處置為換新片+外用藥;明顯上皮缺損時文獻建議涵蓋抗生素預防機會性感染(醫師處方)</td><td>RCCL 2025/2</td></tr>
+<tr><td>偏位預測與 e 值誤差</td><td>基線高度圖可預測偏位(高度不對稱向量);e 值誤差對 sag 的影響隨 K 與 e 增大而放大:40D 時 e0.1誤差僅 12µm,46D 高 e 時達 50µm——陡角膜+高 e 值最易估錯,10µm 即可影響置中;側偏最常偏鼻側(顳鼻高度差所致)</td><td>RCCL 2025/2 引 Chen 2017、Xu 2024</td></tr>
+<tr><td>治療時程實證(CLEAR 2021)</td><td>多數屈光變化發生於<b>首夜</b>,目標效果於 <b>1 週內</b>達成(BCLA CLEAR 共識);機轉為角膜厚度重分佈(中央變薄+旁中央增厚)而非角膜彎曲;與原廠 14–30 天完全矯正窗口併用作進度對照;次發變化 pigmented arc 與 fibrillary lines 屬良性</td><td>Vincent/Cho 等 CLEAR–Orthokeratology 2021</td></tr>
+<tr><td>壓縮量(加深)實證</td><td>壓縮量 0.75D:一週全矯正率 64%;1.75D:92%,且眼軸控制效果多約 23.33%,代價為球面像差(夜間視覺)增加——高加深=到位快+控制強+像差多,取捨與家長溝通</td><td>Tang 等(引自 2024 壓縮量文獻回顧)</td></tr>
+<tr><td>配戴頻率與清潔實證</td><td>每週配戴 >6 天者鏡片吸附風險顯著較低;定期去蛋白清潔與全日視力清晰顯著相關;長期配戴者滿意度 88%、續戴意願 98%(305 位學童資料)</td><td>長期配戴者調查(2022)</td></tr>
+<tr><td>規格衝突處理</td><td>教材載 TZ 可訂至−10.00,與 V5(TZ 標準140 上限−8.00)不一致;本系統一律以 V5 為準</td><td>V5 優先原則(Frank 確立)</td></tr>
+</table></div>
+</section>
+
+<div class="card" id="setupCard" style="border-color:var(--gold)">
+  <b>系統設定</b>(選填——僅啟用 AI 看圖判讀時需要;免費版留空即可)
+  <div class="grid" style="margin-top:10px">
+    <div class="field"><label>Cloudflare Worker 網址</label><input id="cfgUrl" placeholder="https://okfit.你的帳號.workers.dev"></div>
+    <div class="field"><label>存取密碼(APP_TOKEN)</label><input id="cfgTok" type="password"></div>
+  </div>
+  <button class="btn sec" onclick="saveCfg()">儲存設定</button> <span id="cfgMsg"></span>
+</div>
+</main>
+<footer>優立得國際 HOLY VISION｜本工具僅供專業驗配人員輔助使用,不構成醫療診斷。</footer>
+
+<script>
+/* ---------- 通用 ---------- */
+const $=id=>document.getElementById(id);
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>goTab(b.dataset.p));
+function goTab(p){
+  document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x.dataset.p===p));
+  document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('on',x.id===p));
+  window.scrollTo({top:0});}
+const round25=v=>Math.round(v*4)/4;
+const fmt=v=>(v>0?'+':'')+v.toFixed(2);
+$('cfgUrl').value=localStorage.getItem('okfit_url')||'';
+$('cfgTok').value=localStorage.getItem('okfit_tok')||'';
+function saveCfg(){localStorage.setItem('okfit_url',$('cfgUrl').value.trim());
+  localStorage.setItem('okfit_tok',$('cfgTok').value.trim());
+  $('cfgMsg').textContent='已儲存';setTimeout(()=>$('cfgMsg').textContent='',2000);}
+$('pExtra').onchange=()=>{$('pExtraCustomWrap').style.display=$('pExtra').value==='custom'?'block':'none';};
+
+/* ---------- 規則引擎 ---------- */
+function autoAxis(){
+  const a=parseFloat($('axDeg').value);if(isNaN(a))return;
+  const n=((a%180)+180)%180;
+  if(n<=30||n>=150)$('axis').value='wtr';
+  else if(n>=60&&n<=120)$('axis').value='atr';
+  else $('axis').value='obl';
+}
+const TORICITY=[[1.00,0.75],[1.25,1.00],[1.50,1.00],[1.75,1.25],[2.00,1.25],[2.25,1.50],[2.50,1.75],[2.75,1.75],[3.00,2.00],[3.25,2.00],[3.50,2.25]];
+function toricityFor(ca){let r=null;for(const[a,t]of TORICITY){if(ca>=a)r=t;}return r;}
+/* SHD(µm)→ 建議 toricity(D):依 Euclid《Estimating Corneal Elevation》表反查;15µm≈0.50D */
+const SHD_TORICITY=[[24.8,0.75],[30.7,1.00],[42.4,1.25],[54.1,1.50],[59.9,1.75],[71.7,2.00],[83.4,2.25]];
+function toricityFromSHD(shd){let r=null;for(const[u,t]of SHD_TORICITY){if(shd>=u)r=t;}return r;}
+function calcSag(){
+  const fk=parseFloat($('sgFk').value)||parseFloat($('fk').value),
+        sk=parseFloat($('sgSk').value)||parseFloat($('sk').value),
+        e=parseFloat($('sgE').value), c=parseFloat($('sgC').value);
+  if(isNaN(fk)||isNaN(sk)||isNaN(e)||isNaN(c)){$('sagOut').innerHTML='<p class="warn" style="margin-top:8px">請輸入平K、陡K、e 值、弦長。</p>';return;}
+  const zf=conicSag(fk,e,c), zs=conicSag(sk,e,c);
+  if(zf==null||zs==null){$('sagOut').innerHTML='<p class="warn" style="margin-top:8px">參數超出模型有效範圍。</p>';return;}
+  const d=(zs-zf)*1000;
+  const tc=toricityFromSHD(Math.abs(d));
+  let m='<div class="card" style="margin-top:10px"><b>矢高('+c.toFixed(1)+'mm 弦):平K '+(zf*1000).toFixed(0)+'µm、陡K '+(zs*1000).toFixed(0)+'µm,高度差 ≈ '+Math.abs(d).toFixed(0)+' µm</b><br>';
+  if(Math.abs(d)>25){m+='<span class="tag">估算 >25µm:建議進一步以高度圖確認散光片需求</span>'+(tc?'<span class="tag">對照 toricity ≈ C-'+tc.toFixed(2)+'</span>':'');}
+  else m+='<span class="tag">估算 ≤25µm:未達散光片門檻</span>';
+  m+='<div class="src">學理估算(兩徑線假設同 e 值);正式判斷以 topo 高度圖 SHD 或角散換算表為準。</div></div>';
+  $('sagOut').innerHTML=m;
+}
+function calcSHD(){
+  const v=['e1','e2','e3','e4'].map(i=>parseFloat($(i).value));
+  if(v.some(isNaN)){$('shdOut').innerHTML='<p class="warn" style="margin-top:8px">請輸入四個高度值。</p>';return;}
+  const flat=(v[0]+v[1])/2, steep=(v[2]+v[3])/2, shd=Math.abs(flat-steep);
+  const need=shd>25, tc=toricityFromSHD(shd);
+  let m='<div class="card" style="margin-top:10px"><b>SHD = |'+flat.toFixed(1)+' − ('+steep.toFixed(1)+')| = '+shd.toFixed(1)+' µm</b><br>';
+  if(need){
+    m+='<span class="tag">>25µm:符合原廠散光片適應</span>';
+    if(tc)m+='<span class="tag">建議 toricity C-'+tc.toFixed(2)+'(依高度差對照)</span>';
+    m+='<div class="src">已自動將上方「limbus-to-limbus / 8mm高度差>25µm」設為「是」;訂散光片時請一併提供此高度差值(原廠 Module 3:訂 Toric 需附 sag height difference)。</div>';
+    $('l2l').value='y';
+  }else{
+    m+='<span class="tag">≤25µm:高度差未達散光片門檻</span><div class="src">中央型散光可先評估球面設計;仍以螢光圖形與醫師判斷為準。(另一專業文獻門檻為 30µm;原廠 Euclid 25µm 為本系統主判準)</div>';
+    if($('l2l').value==='y')$('l2l').value='n';
+  }
+  m+='</div>';$('shdOut').innerHTML=m;
+}
+/* FDA P010062 臨床試驗(210 core eyes,9個月,成人17–64):各初始度數段平均降度與殘餘 */
+const FDA_EFF=[[1.00,1.15,0.21],[2.00,1.52,-0.15],[3.00,2.39,-0.13],[4.00,3.29,-0.22],[5.00,3.85,-0.57],[6.00,4.67,-0.68],[99,4.88,-1.25]];
+function fdaEff(absSph){for(const[lim,red,res]of FDA_EFF){if(absSph<=lim)return{red,res};}return null;}
+const D2MM=d=>337.5/d, MM2D=m=>337.5/m;
+/* 圓錐曲線矢高(標準幾何光學公式):z = y²/(r(1+√(1−(1+Q)y²/r²))),Q=−e² */
+function conicSag(K,e,chord){
+  const r=D2MM(K), y=chord/2, Q=-(e*e);
+  const t=1-(1+Q)*y*y/(r*r);
+  if(t<0)return null;
+  return y*y/(r*(1+Math.sqrt(t)));  // mm
+}
+function acSelect(fk,ca){
+  if(ca<=0.50)return{ac:round25(fk-0.25),rule:'角膜散光 0–0.50D → FK−0.25',over:false};
+  if(ca<=1.25)return{ac:round25(fk),rule:'角膜散光 0.75–1.25D → on FK',over:false};
+  if(ca<=2.00)return{ac:round25(fk+0.25),rule:'角膜散光 1.50–2.00D → FK+0.25;若螢光圖形不佳可改散光片',over:false};
+  return{ac:round25(fk+0.25),rule:'角膜散光 >2.00D:超出教材三檔,建議直接評估散光片',over:true};
+}
+
+/* 片種規格(依《優立得全品項內外價 V5》;度數為 TP 絕對值上限)
+   MyEuclid 為數位驗配獨立流程(topo 直接拍圖訂片),不經本試片選片邏輯 */
+const PRODUCTS=[
+ {id:'em140', brand:'Euclid', name:'Emerald(EM)標準 140', fam:'EM', sph:6.00, cylTp:5.00, colors:['B','G','V'], avail:true},
+ {id:'emmax', brand:'Euclid', name:'Emerald(EM)MAX 240',  fam:'EM', sph:6.00, cylTp:5.00, colors:['B','G'],     avail:true},
+ {id:'tz140', brand:'Euclid', name:'Topaz(TZ)標準 140',   fam:'TZ', sph:8.00, cylTp:6.00, colors:['B','G','V'], avail:true},
+ {id:'tzmax', brand:'Euclid', name:'Topaz(TZ)MAX 240',    fam:'TZ', sph:6.00, cylTp:6.00, colors:['B','G'],     avail:true},
+ {id:'std240',brand:'優得',   name:'Standard Infinite 240', fam:'EM', sph:5.00, cylTp:5.00, colors:['B','G'],     avail:true},
+ {id:'myl240',brand:'優得',   name:'Myllo Infinite 240(高離焦/雙RC)', fam:'TZ', sph:10.50, cylTp:10.50, colors:['B','G'], avail:true},
+ {id:'std180',brand:'優得',   name:'Standard XO2 180',      fam:'EM', sph:5.00, cylTp:5.00, colors:['B','G'],     avail:false, note:'準備中,約 2026/10 上市'},
+ {id:'myl180',brand:'優得',   name:'Myllo XO2 180',         fam:'TZ', sph:7.50, cylTp:7.50, colors:['B','G'],     avail:false, note:'準備中,約 2026/10 上市'},
+];
+/* 依需求過濾片種:tp=目標度數絕對值, needTZ=需高降度/雙RC特性, toric=需散光設計 */
+function matchProducts(tp,needTZ,toric){
+  return PRODUCTS.map(p=>{
+    const limit = toric ? p.cylTp : p.sph;
+    return {...p, inRange: tp<=limit, famOK: needTZ ? p.fam==='TZ' : true};
+  }).filter(p=>p.famOK && p.inRange);
+}
+
+function calcTrial(){
+  const o={sph:parseFloat($('sph').value), cyl:parseFloat($('cyl').value)||0,
+        fk:parseFloat($('fk').value), sk:parseFloat($('sk').value),
+        hvid:parseFloat($('hvid').value), prog:$('prog').value, l2l:$('l2l').value,
+        axis:$('axis').value, pupil:parseFloat($('pupil').value), ev:parseFloat($('ev').value)};
+  if(isNaN(o.sph)||isNaN(o.fk)||isNaN(o.sk)){$('r1').innerHTML='<div class="card warn">請至少輸入 SPH、平K、陡K。</div>';return;}
+  $('r1').innerHTML=trialCore(o);
+}
+function trialCore(o){
+  const {sph,cyl,fk,sk,hvid,prog,l2l,axis,pupil,ev}=o;
+  const ca=+(sk-fk).toFixed(2);            // 角膜散光 = 陡K − 平K
+  const warns=[];
+
+  /* AC(優立得教材三檔) */
+  const acSel=acSelect(fk,ca);
+  const ac=acSel.ac, acRule=acSel.rule;
+  if(acSel.over)warns.push('角膜散光 '+ca.toFixed(2)+'D 超出教材 AC 三檔範圍,AC 僅供參考,請醫師判斷。');
+
+  /* 散光片判斷 */
+  let toric=false,toricWhy=[];
+  if(l2l==='y'){toric=true;toricWhy.push('topo 呈 limbus-to-limbus 散光 / 8mm弦高度差>25µm(原廠散光片適應)');}
+  if(ca>=1.50&&ca<=2.00)toricWhy.push('角膜散光 '+ca.toFixed(2)+'D:若螢光圖形不佳建議散光片');
+  if(ca>2.00){toric=true;toricWhy.push('角膜散光 >2.00D,建議散光片');}
+  const tcy=toricityFor(ca);
+
+  /* 產品線 */
+  const why=[];
+  const wantTZ=(sph<=-6.00)||(fk<41.00)||prog==='fast';
+  if(fk<41.00)why.push('FK '+fk.toFixed(2)+' < 41.00D(角膜較平)');
+  if(sph<=-6.00)why.push('近視 '+sph.toFixed(2)+' 超過 −6.00');
+  if(prog==='fast')why.push('近視增速快');
+  if(sph<=-5.00&&sph>-6.00)why.push('−5.00~−6.00 者可考慮 TZ 以求更佳矯正效果(非必要)');
+  let design;
+  if(wantTZ){design=toric?'TTR(Topaz Toric 高降度散光)':'TZ(Topaz 高降度)';}
+  else{design=toric?'ETR(Emerald Toric 標準散光片)':'EM(Emerald 標準片)';}
+  if(toric&&!wantTZ&&sph<-5.00)warns.push('ETR 適用 TP −5.00 以下,本例度數 '+sph.toFixed(2)+',請改評估 TTR。');
+
+  /* 直徑 */
+  let dia=null,diaRule='';
+  if(!isNaN(hvid)){
+    if(fk<=40.00&&hvid>=11.6){dia=11.0;diaRule='FK≤40.00 且 HVID≥11.6 → 起始 11.0mm(原廠 OAD 規則)';}
+    else{dia=Math.round((hvid-1.0)*10)/10;diaRule='HVID−1mm(台灣端教材預設);原廠允許至 HVID−0.6mm';}
+    if(dia>11.6){dia=11.6;diaRule+=';已依原廠上限 11.6mm 修正';}
+    if(dia<9.8){warns.push('計算直徑低於原廠下限 9.8mm,請醫師判斷。');dia=9.8;}
+  }
+
+  /* POZ */
+  let poz='';
+  if(prog==='slow')poz='6.2(進展慢:重視日間視覺品質)';
+  else if(prog==='mid')poz='5.8(中等進展:平衡配適與控制)';
+  else if(prog==='fast')poz=toric?'5.6(快速進展且需散光設計)':'5.4(快速進展:優先近視控制)';
+
+  /* 候選適配性篩選(Euclid 認證 Module 3) */
+  const screen=[];
+  if(sph>-1.00)screen.push(['note','近視低於 −1.00D:仍可配,但矯正效果與持續時間以稍高度數者較佳']);
+  if(sph<-5.00)screen.push(['warn','近視超過 −5.00D:超出美國 FDA 適應範圍(−5.00),屬挑戰性案例(台灣品項規格依 V5);期望管理:所需回診與換片次數較多、治療區較小易眩光,部分降度對近視控制仍具價值,過渡期可搭配部分矯正眼鏡']);
+  if(sph<=-5.00&&fk<42.00)screen.push(['warn','高度數且 K 值偏平(疑軸性近視为主):角膜可壓平幅度有限,難以達成足量降度,請保守設定期望']);
+  if(cyl&&Math.abs(cyl)>=0.5*Math.abs(sph))screen.push(['warn','驗光散光 '+cyl.toFixed(2)+' ≥ 球面 50%:可能出現殘餘散光']);
+  if(axis==='wtr'&&cyl&&Math.abs(cyl)>1.50)screen.push(['warn','順散 WTR 超過 −1.50D:超出美國 FDA 散光適應上限,屬挑戰性案例']);
+  if(axis==='atr'&&cyl&&Math.abs(cyl)>0.75)screen.push(['warn','逆散 ATR 超過 −0.75D:屬挑戰性案例,偏位風險高']);
+  if(fk>46.00)screen.push(['warn','FK '+fk.toFixed(2)+' > 46.00D(角膜偏陡):易偏位']);
+  if(fk<40.00&&!isNaN(hvid)&&hvid>12.5)screen.push(['warn','大而平角膜(FK<40.00 且 HVID>12.5):治療反應較慢、易偏位']);
+  if(!isNaN(hvid)&&hvid<11.0)screen.push(['warn','HVID '+hvid.toFixed(1)+' < 11.0mm(小角膜):大鏡片易壓迫輪部;鏡片最小僅能做到 9.8mm']);
+  if(!isNaN(pupil)&&pupil>6.0)screen.push(['warn','暗處瞳孔 '+pupil.toFixed(1)+'mm > 6mm:治療區可能無法涵蓋瞳孔,眩光/光暈風險高,POZ 選擇需納入考量']);
+  if(!isNaN(ev)&&(ev<0.3||ev>0.7))screen.push(['note','e 值 '+ev.toFixed(2)+' 落於理想範圍 0.3–0.7 之外']);
+
+  let h='';
+  if(screen.length){
+    h+='<div class="card" style="border-left:5px solid var(--gold)"><b>適配性檢查(Euclid 認證 Module 3)</b><ul style="margin-top:8px">';
+    screen.forEach(([t,m])=>h+='<li'+(t==='warn'?' class="warn"':'')+'>'+m+'</li>');
+    h+='</ul><div class="src">以上為候選篩選警訊,非禁配;是否續配由醫師評估(禁忌症清單見「規則出處」)。</div></div>';
+  }
+  h+='<div class="card result"><div class="big">'+design+'</div>';
+  h+='<p style="margin:8px 0">建議第一片 AC:<b>'+ac.toFixed(2)+' D</b>(≈ '+D2MM(ac).toFixed(2)+' mm)'+(dia?'&nbsp;&nbsp;直徑:<b>'+dia.toFixed(1)+' mm</b>':'')+'</p>';
+  h+='<span class="tag">角膜散光 '+ca.toFixed(2)+'D</span><span class="tag">SPH '+sph.toFixed(2)+'D</span>';
+  if(toric&&tcy)h+='<span class="tag">建議 toricity C-'+tcy.toFixed(2)+'(依角散換算表)</span>';
+  if(poz)h+='<span class="tag">POZ 建議 '+poz+'</span>';
+  h+='<div class="src">AC 規則:'+acRule+'</div>';
+  if(dia)h+='<div class="src">直徑規則:'+diaRule+'</div>';
+  if(why.length)h+='<div class="src">產品線依據:'+why.join(';')+'</div>';
+  if(toricWhy.length)h+='<div class="src">散光片評估:'+toricWhy.join(';')+';注意:Euclid Toric 的 BC 與周邊弧維持對稱、僅 RC 與 AC 非對稱——不提供散光「光學矯正」,作用是貼合散光角膜以改善定位穩定與整體結果(Module 2)</div>';
+  warns.forEach(w=>h+='<p class="warn" style="margin-top:8px">⚠ '+w+'</p>');
+
+  /* 片種建議(依 V5 度數規格過濾;以球面度數 SPH 絕對值篩選,最終依含加深之處方再驗證) */
+  const tp=Math.abs(sph);
+  const list=matchProducts(tp,wantTZ,toric);
+  h+='<h2>符合條件的片種(依《全品項內外價 V5》度數規格)</h2>';
+  if(!list.length){h+='<p class="warn">⚠ 無片種符合 TP '+tp.toFixed(2)+'D'+(toric?'(散光)':'')+'之規格,請醫師確認。</p>';}
+  else{
+    h+='<table><tr><th>品牌</th><th>片種</th><th>'+(toric?'散光':'球面')+' TP 上限</th><th>顏色</th><th>備註</th></tr>';
+    list.forEach(p=>{
+      const limit=toric?p.cylTp:p.sph;
+      const cn=p.colors.map(c=>({B:'藍',G:'綠',V:'紫'}[c])).join('');
+      let note=p.note||'';
+      if(!p.avail)note='<span class="warn">'+note+'(暫不可選)</span>';
+      h+='<tr'+(p.avail?'':' style="opacity:.55"')+'><td>'+p.brand+'</td><td>'+p.name+'</td><td>-'+limit.toFixed(2)+'</td><td>'+cn+'</td><td>'+note+'</td></tr>';});
+    h+='</table>';
+    if(tp>8.00)h+='<p class="src">TP 超過 −8.00:美國線已無適用片種,Myllo Infinite 240(至 −10.50)為唯一選項(V5 規格)。</p>';
+    h+='<p class="src">另有 MyEuclid 數位驗配(連結 topo 儀直接拍圖訂片,免試片流程),不在本試片選片範圍;實際採用品項請依診所引進項目與醫師判斷。</p>';
+  }
+  /* FDA 臨床試驗矯正預期 */
+  const eff=fdaEff(Math.abs(sph));
+  if(eff){
+    h+='<h2>矯正預期(FDA P010062 臨床試驗,成人資料)</h2>';
+    h+='<span class="tag">同度數段平均降度 '+eff.red.toFixed(2)+'D</span><span class="tag">平均殘餘 '+eff.res.toFixed(2)+'D</span>';
+    h+='<p class="src" style="margin-top:6px">全體:73% 達裸視 20/20、95% 達 20/40;80% 落在 target ±0.50D、93% ±1.00D 內。';
+    if(Math.abs(sph)>4.00)h+='<b class="warn">本例 >4.00D:精準度下降(僅約 60% 落在 ±0.50D、64% 達 20/20),請預先與家長溝通。</b>';
+    if(Math.abs(sph)>3.00)h+='初始 >3.00D 者視覺干擾(眩光/鬼影)發生率較高。';
+    h+='數值為平均值,個別差異存在;該試驗未含兒少族群,兒少適用性依台灣核准與醫師判斷。</p>';
+  }
+  h+='<p class="src" style="margin-top:10px">出處:優立得《歐基里德OK片基礎驗配》、《全品項內外價 V5》、Euclid《Determining OAD》《Estimating Corneal Elevation》《POZ Recommendations》、FDA P010062。試片戴上後請至「螢光評估」分頁確認配適。</p></div>';
+  return h;
+}
+
+/* ---------- 影像 ---------- */
+const imgs={fl:null,tp:null,bt:null,pt:null};
+const IMGMAP={fl:['fileF','prevF','dropF'],tp:['fileT','prevT','dropT'],bt:['fileB','prevB','dropB'],pt:['fileP','prevP','dropP']};
+function pickImg(k){const [fi,pv,dp]=IMGMAP[k];const f=$(fi);f.onchange=()=>{
+  const file=f.files[0];if(!file)return;
+  const rd=new FileReader();rd.onload=()=>{
+    imgs[k]={media_type:file.type,data:rd.result.split(',')[1]};
+    $(pv).innerHTML='<img src="'+rd.result+'" alt="">';
+    $(dp).classList.add('has');};
+  rd.readAsDataURL(file);};f.click();}
+
+async function callAI(content){
+  const url=localStorage.getItem('okfit_url'),tok=localStorage.getItem('okfit_tok');
+  if(!url)throw new Error('AI 功能未啟用(免費版)——見頁面提示');
+  const rs=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','X-App-Token':tok||''},
+    body:JSON.stringify({messages:[{role:'user',content}]})});
+  if(!rs.ok)throw new Error('HTTP '+rs.status+':'+await rs.text());
+  const data=await rs.json();
+  const txt=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+  return JSON.parse(txt.replace(/```json|```/g,'').trim());
+}
+
+/* ---------- AI 判讀 ---------- */
+const ADJUST={
+  '理想':{act:'不需調整。建議配戴 7–14 天後追蹤;多數患者 14–30 天達完全矯正。',src:'Euclid 認證 Module 4、5'},
+  '偏鬆(過平)':{act:'sag 不足、配適過平(常見上方偏位傾向):AC1+AC2 調陡 0.1mm(0.50D);散光片可增 toricity 0.50D。',src:'Euclid 認證 Module 5'},
+  '偏緊(過陡)':{act:'sag 過高、配適過緊(常見下方偏位/中央淚池):無角膜散光者 AC1+AC2 放平 0.1mm(0.50D);散光片或角膜散光者減 toricity 15µm(≈0.50D)。',src:'Euclid 認證 Module 5 + ABB Troubleshooting'},
+  '上方偏位':{act:'配適過平、sag 不足:AC1+AC2 調陡 0.1mm(0.50D);散光片可增 toricity 0.50D。',src:'Euclid 認證 Module 5'},
+  '下方偏位':{act:'配適過緊、垂直 sag 過高:AC1+AC2 放平 0.1mm(0.50D);散光片/角膜散光者減 toricity ≈0.50D。',src:'Euclid 認證 Module 5 + ABB'},
+  '側向偏位':{act:'直徑太小:直徑加 0.4mm(不可超過 HVID−0.6mm);HVID 不允許時考慮 0.75D 散光設計。',src:'Euclid 認證 Module 5 + ABB'},
+  '中央島/Vaulting':{act:'sag 過高:RC 放平 0.2mm(1.00D)。',src:'Euclid 認證 Module 5 + ABB'},
+  '無法判讀':{act:'影像品質不足或非螢光染色圖,請重新拍攝(建議鈷藍光下、對焦清晰、鏡片全貌入鏡)。',src:'—'}};
+
+const PROMPT=`你是角膜塑型片(orthokeratology)螢光染色圖判讀輔助。僅依影像可見證據判讀,不得臆測。
+Euclid 鏡片結構(由中心至周邊,標準直徑 10.6mm):BC(標準寬 6.2mm,較角膜平、正壓區,形成 ≥5mm 治療區)→ RC(顯著較陡,環狀淚液庫、負壓區,螢光下應為亮環)→ AC1(半徑約等於平K)+ AC2(較 AC1 平 1.50D,貼合周邊漸平的角膜,著陸區,螢光下應為暗帶)→ 周邊弧(最平,edge lift 亮緣)。散光片(Toric)僅 RC 與 AC 非對稱,BC 與周邊弧對稱。
+判讀標準(Euclid 原廠明文):
+理想配適:鏡片置中不壓迫輪部;瞳孔周圍呈螢光環(RC 淚液環);360 度有足夠 edge lift;(動態)眨眼移動約 1–2mm。
+偏緊(過陡/sag過高):中央 RC 下淚液堆積(中央亮池)、無清晰 bulls-eye、edge lift 不足;常伴下方偏位。
+偏鬆(過平/sag不足):中央 touch 面積過大過暗、RC 環細弱、edge lift 過多;常伴上方偏位。
+重要:BOZR 下方理想淨空僅約 5–10µm,低於螢光可視門檻(約 20µm),故中央呈暗區屬「正常預期外觀」,不可僅憑中央偏暗即判偏鬆;偏鬆需同時符合 RC 環細弱/edge lift 過多等其他證據。
+偏位:治療區/鏡片中心相對瞳孔的位置(上方/下方/側向)。側向偏位:一側邊緣落在角膜內、另一側近鞏膜,通常直徑太小。
+中央島/Vaulting:RC 下中央淚池、無 bulls-eye。
+若同時提供 topo 圖:理想=完整紅環 bulls-eye;smiley-face=上方偏位;frowny-face=下方偏位;新月形切入中央=側向偏位;中央陡島=中央島。topo 與螢光證據需分開陳述。
+靜態照片無法評估移動量,movement 一律填 "無法由靜態影像評估"。
+只輸出 JSON,不加任何其他文字與 markdown:
+{"classification":"理想|偏鬆(過平)|偏緊(過陡)|上方偏位|下方偏位|側向偏位|中央島/Vaulting|無法判讀","confidence":"高|中|低","fluorescein_findings":["…"],"topo_findings":["…或空陣列"],"movement":"無法由靜態影像評估","notes":"其他觀察或影像品質限制"}`;
+
+const NO_AI='<div class="card" style="border-left:5px solid var(--gold)"><b>AI 判讀未啟用(目前為免費版)</b><p style="margin-top:6px">免費版完整可用:試片選擇、開立處方、各計算器、回診檢查清單,以及本頁的<b>醫師手動判讀模式</b>(選擇分類後系統給出相同的原廠規則對應)。</p><p class="src">欲啟用 AI 看圖判讀:依 README 設定 Cloudflare Worker 與 API 金鑰後,於下方「系統設定」填入即可(每次判讀約 NT$1–3)。</p></div>';
+function manualFl(){
+  const c=$('flManual').value;
+  if(!c){$('r2').innerHTML='<div class="card warn">請先選擇判讀分類。</div>';return;}
+  renderAI({classification:c,confidence:'醫師判讀',fluorescein_findings:[],topo_findings:[],movement:'依裂隙燈動態評估',notes:''});
+}
+function manualPost(){
+  const c=$('ptManual').value;
+  if(!c){$('r6').innerHTML='<div class="card warn">請先選擇判讀分類。</div>';return;}
+  const days=parseInt($('ptDur').value), res=parseFloat($('ptRes').value)||0, toric=$('ptToric').value==='y';
+  renderPost({classification:c,confidence:'醫師判讀',map_type:'依醫師判讀',central_peak_sign:'',topo_findings:[]},days,res,toric);
+}
+async function analyze(){
+  if(!localStorage.getItem('okfit_url')){$('r2').innerHTML=NO_AI;return;}
+  if(!imgs.fl){$('r2').innerHTML='<div class="card warn">請先上傳螢光染色圖。</div>';return;}
+  $('r2').innerHTML='<div class="card"><span class="spin"></span> AI 判讀中…</div>';
+  const content=[{type:'image',source:{type:'base64',...imgs.fl}}];
+  let ctx='影像為螢光染色圖。';
+  if($('ctxLens').value)ctx+='目前試片:'+$('ctxLens').value+'。';
+  ctx+='是否散光片:'+($('ctxToric').value==='y'?'是':'否')+'。時機:'+$('ctxWear').value+'。';
+  content.push({type:'text',text:ctx+'\n\n'+PROMPT});
+  try{renderAI(await callAI(content));}
+  catch(e){$('r2').innerHTML='<div class="card warn">判讀失敗:'+e.message+'</div>';}
+}
+function renderAI(j){
+  const adj=ADJUST[j.classification]||ADJUST['無法判讀'];
+  const cls=j.classification==='理想'?'ok':(j.classification==='無法判讀'?'':'warn');
+  let h='<div class="card result"><div class="big '+cls+'">'+j.classification+'</div>';
+  h+='<span class="tag">AI 信心:'+(j.confidence||'—')+'</span><span class="tag">'+(j.movement||'')+'</span>';
+  if(j.fluorescein_findings&&j.fluorescein_findings.length)h+='<h2>螢光圖觀察</h2><ul>'+j.fluorescein_findings.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+  if(j.topo_findings&&j.topo_findings.length)h+='<h2>Topo 觀察</h2><ul>'+j.topo_findings.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+  h+='<h2>對應官方調整建議</h2><p>'+adj.act+'</p><div class="src">出處:'+adj.src+'</div>';
+  if(j.notes)h+='<div class="src" style="margin-top:6px">備註:'+j.notes+'</div>';
+  h+='<p class="src" style="margin-top:10px">AI 判讀僅供輔助,調整規則為系統內建之原廠明文(非 AI 生成);移動量(1–2mm)請以裂隙燈動態評估,最終以醫師判斷為準。</p></div>';
+  $('r2').innerHTML=h;
+}
+
+/* ---------- ④ 原始 topo → 試片 ---------- */
+const PROMPT_BT=`你是角膜地形圖數值抄錄員。任務:只抄錄影像上「實際印出」的數值,絕對不得推估、計算或補完。
+需要找的欄位(常見標示):SimK / K1 / K2 / Kf / Ks / flat K / steep K(單位 D)、HVID / WTW(mm)、e值 / eccentricity / Q值。
+規則:
+- 只回報影像中清楚可讀的數字;模糊、被遮擋、不存在 → 該欄位填 null。
+- 若同時有 D 與 mm 標示,回報 D 值。
+- 若影像不是角膜地形圖,readable 填 false。
+只輸出 JSON:
+{"readable":true|false,"flat_k":數值或null,"steep_k":數值或null,"hvid":數值或null,"e_value":數值或null,"image_quality":"良好|欠佳|無法評估","quality_issues":["環紋不完整/眼瞼陰影/失焦/淚膜破裂痕跡等,無則空陣列"],"source_labels":"你讀取的原始標籤與數字(供人工核對)","notes":"讀取限制說明"}`;
+
+async function analyzeTopoFit(){
+  if(!localStorage.getItem('okfit_url')){$('r7').innerHTML=NO_AI+'<div class="card"><p>免費版替代路徑:改用「<b>試片選擇</b>」分頁,手動輸入 topo 圖上的 SimK 平K/陡K 與 HVID,即可得到完全相同的試片與片種建議。</p></div>';return;}
+  if(!imgs.bt){$('r7').innerHTML='<div class="card warn">請先上傳原始 topo 圖。</div>';return;}
+  const sph=parseFloat($('tSph').value);
+  if(isNaN(sph)){$('r7').innerHTML='<div class="card warn">請輸入球面度數 SPH(驗光單數值,topo 圖上沒有)。</div>';return;}
+  $('r7').innerHTML='<div class="card"><span class="spin"></span> AI 讀取 topo 數值中…</div>';
+  try{
+    const j=await callAI([{type:'image',source:{type:'base64',...imgs.bt}},{type:'text',text:PROMPT_BT}]);
+    if(!j.readable||j.flat_k==null||j.steep_k==null){
+      $('r7').innerHTML='<div class="card warn">⚠ AI 無法從影像確實讀到 SimK 數值('+(j.notes||'')+')。請改用「試片選擇」分頁手動輸入,不做推估。</div>';return;}
+    const cyl=parseFloat($('tCyl').value)||0, prog=$('tProg').value, extra=parseFloat($('tExtra').value);
+    const fk=j.flat_k, sk=j.steep_k, ca=+(sk-fk).toFixed(2);
+    let h='<div class="card"><b>AI 抄錄之 topo 數值(請人工核對)</b><br>'
+      +'<span class="tag">平K '+fk+'</span><span class="tag">陡K '+sk+'</span>'
+      +(j.hvid!=null?'<span class="tag">HVID '+j.hvid+'</span>':'<span class="tag">HVID 未讀到,直徑不計算</span>')
+      +(j.e_value!=null?'<span class="tag">e值 '+j.e_value+'(參考)</span>':'')
+      +(j.image_quality?'<span class="tag'+(j.image_quality==='欠佳'?' warn':'')+'">影像品質:'+j.image_quality+'</span>':'')
+      +((j.quality_issues&&j.quality_issues.length)?'<div class="src warn">品質問題:'+j.quality_issues.join('、')+'——建議依拍攝品質檢查重拍後再判讀</div>':'')
+      +'<div class="src">讀取來源:'+(j.source_labels||'—')+(j.notes?';'+j.notes:'')+'</div></div>';
+    h+=trialCore({sph,cyl,fk,sk,hvid:j.hvid!=null?j.hvid:NaN,prog,l2l:'',axis:'',pupil:NaN,ev:j.e_value!=null?j.e_value:NaN});
+    const est=round25(sph+extra);
+    h+='<div class="card result"><b>預估處方 target(topo 驗配)</b><div class="big">'+est.toFixed(2)+' D</div>'
+      +'<p style="margin-top:6px">= 驗光 SPH '+fmt(sph)+' + 加深 '+fmt(extra)+'</p>'
+      +'<p class="warn">未含試片 OR;若走試片流程,正式處方請依「開立處方」分頁(試片 + OR + 加深)計算,並由醫師確認。</p></div>';
+    /* 模擬螢光染色示意圖 */
+    const acSug=acSelect(fk,ca).ac;
+    h+='<div class="card"><h2 style="margin-top:0">模擬螢光染色示意圖</h2>'
+      +'<div class="grid"><div><canvas id="simCv" width="340" height="340" style="max-width:100%;border-radius:10px"></canvas></div>'
+      +'<div><div class="field"><label>模擬 AC(D,預設為建議值 '+acSug.toFixed(2)+',可調整比較鬆緊)</label>'
+      +'<input id="simAC" type="number" step="0.25" value="'+acSug.toFixed(2)+'"></div>'
+      +'<button class="btn sec" style="margin-top:10px" onclick="reSim('+fk+','+ca+')">重新模擬</button>'
+      +'<p class="src" style="margin-top:10px">模擬邏輯:AC 相對建議值每放平 0.25D 中央 touch 增大、edge lift 增寬,且型態上偏(過平→上方偏位傾向);每調陡 0.25D 中央淚池增亮、edge lift 縮減,型態下偏(過陡→下方偏位傾向);角膜散光 ≥1.50D 呈啞鈴狀不對稱——偏位方向依原廠 Module 5 規則視覺化。</p>'
+      +'<p class="warn" style="font-size:.85rem">此為依 AC 與 K 值關係推繪之示意圖,非臨床影像;實際配適一律以裂隙燈螢光染色為準。</p></div></div></div>';
+    $('r7').innerHTML=h;
+    reSim(fk,ca);
+  }catch(e){$('r7').innerHTML='<div class="card warn">讀取失敗:'+e.message+'</div>';}
+}
+
+/* ---------- 模擬螢光圖繪製(淚液厚度模型) ---------- */
+function simProfile(rn){
+  /* 理想配適的淚液厚度分佈:中央薄(touch)→ RC 淚液環亮 → AC 貼合暗 → 邊緣翹亮 */
+  const pts=[[0,0.10],[0.36,0.10],[0.48,1.00],[0.60,0.85],[0.70,0.18],[0.88,0.15],[0.96,0.80],[1,0.85]];
+  for(let i=1;i<pts.length;i++){
+    if(rn<=pts[i][0]){
+      const [a,va]=pts[i-1],[b,vb]=pts[i];
+      return va+(vb-va)*(rn-a)/(b-a);
+    }}
+  return 0.85;
+}
+function drawSim(cv,fitDelta,ca){
+  const ctx=cv.getContext('2d'),W=cv.width,H=cv.height,cx=W/2,cy=H/2,R=W*0.46;
+  const t=Math.max(-1.5,Math.min(1.5,fitDelta));       // AC 偏差(D):+平=鬆, −陡=緊
+  const caN=Math.min(Math.max(ca-0.75,0),2.75)/2.75;   // 散光影響(>0.75 起漸顯)
+  const img=ctx.createImageData(W,H);
+  const off=-t*22;  /* 鬆(過平)→型態上偏;緊(過陡)→型態下偏(原廠偏位規則之視覺化) */
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const dx=x-cx,dy=y-cy,r=Math.hypot(dx,dy),i=(y*W+x)*4;
+    if(r>R){ /* 鏡片外:鈷藍光背景 */
+      img.data[i]=14;img.data[i+1]=26;img.data[i+2]=80;img.data[i+3]=255;continue;}
+    const dyE=y-(cy+off), rE=Math.hypot(dx,dyE);
+    const rn=Math.min(rE/R,1), th=Math.atan2(dyE,dx);
+    let tf=simProfile(rn);
+    if(t<0){ /* 偏緊:中央淚池、邊緣翹減 */
+      tf+=(-t)*Math.max(0,0.6-rn)*1.1;
+      tf-=(-t)*Math.max(0,rn-0.85)*1.3;
+    }else if(t>0){ /* 偏鬆:touch 區擴大變暗、RC 環變弱、邊緣翹增 */
+      tf-=t*Math.max(0,0.62-rn)*0.55;
+      tf+=t*Math.max(0,rn-0.72)*1.0;
+    }
+    /* 角膜散光:AC/RC 區呈啞鈴狀(水平貼、垂直積液,WTR 型態示意) */
+    if(rn>0.42&&rn<0.96)tf+=0.42*caN*(-Math.cos(2*th))*Math.sin((rn-0.42)/0.54*Math.PI);
+    tf=Math.max(0,Math.min(1.25,tf));
+    img.data[i]=8+tf*30;
+    img.data[i+1]=18+tf*205;
+    img.data[i+2]=30+tf*45;
+    img.data[i+3]=255;
+  }
+  ctx.putImageData(img,0,0);
+  ctx.strokeStyle='rgba(255,255,255,.45)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(cx,cy,R,0,7);ctx.stroke();
+}
+function reSim(fk,ca){
+  const simAC=parseFloat($('simAC').value);
+  const sug=acSelect(fk,ca).ac;
+  if(isNaN(simAC))return;
+  drawSim($('simCv'), simAC-sug, ca);
+}
+
+/* ---------- ⑤ 戴後 topo 追蹤 ---------- */
+const PROMPT_PT=`你是角膜塑型戴後地形圖判讀輔助。僅依影像可見證據判讀,不得臆測。
+機轉背景:BC 正壓使中央上皮變薄、RC 環狀淚液庫負壓使中周邊上皮增厚,約兩週完成塑形——差異圖上應呈「中央壓平 + 中周邊陡化環」。
+判讀標準(Euclid 原廠明文):
+理想:置中治療區,完整紅色環圍繞中央角膜(bulls-eye)。
+smiley-face(治療區高於瞳孔)= 上方偏位(配適過平/sag不足)。
+frowny-face(治療區低於瞳孔)= 下方偏位(配適過緊/sag過高)。
+新月形陡區切入中央角膜 = 側向偏位(直徑太小)。
+中央陡島被較平治療區包圍 = 中央島;治療區非 360 度均勻壓平/呈橢圓或領結狀 = Vaulting(此兩者建議以軸向差異圖判讀,僅有戴後圖可能誤判,須註明)。
+中央島細分(僅差異圖可判):中央峰值 >0.00D 且紅環置中 = 真性中央島(過陡);中央峰值 <0.00D、常伴 smiley-face 或 placido 環紋扭曲 = 假性中央島(過平、上皮受壓,調整方向與真性相反)。可讀到差異圖數值時務必回報 central_peak_sign。
+smiley-face 紅環常偏上顳側;偏位型態常伴隨症狀:矯正不足、散光增加、鬼影/眩光。
+治療區周圍的褐色鐵質沉積環(iron ring/pigmented arc)為長期配戴之良性變化、治療穩定的表徵,幾乎所有長期配戴者可見——不列為異常、不觸發調整,於 notes 註記即可。
+治療區完整但範圍偏小、RC 環侵入瞳孔區 = 治療區偏小(可能眩光)。
+治療區呈橢圓/不完整、紅環強度不均或邊緣淚液不均 = 散光型不穩定(鏡片夜間 rocking),多見於散光延伸至周邊者。
+紅環淺、不均或不完整 = 中央壓平不足/置中不良的訊號。
+若影像為差異圖(difference map)請註明;若僅為戴後單圖,對中央島/Vaulting 的判讀信心需降級並說明。
+只輸出 JSON:
+{"classification":"理想|上方偏位|下方偏位|側向偏位|中央島/Vaulting|治療區偏小|橢圓/不完整治療區|無法判讀","confidence":"高|中|低","map_type":"差異圖|戴後單圖|無法判斷","central_peak_sign":"正|負|無中央峰|無法判讀","topo_findings":["…"],"notes":"限制說明"}`;
+
+/* 治療進度對照(CLEAR 2021:多數屈光變化發生於首夜、1週內達目標效果;Euclid Module 4:14–30天完全矯正)
+   分級門檻為系統操作化設定,非文獻原文 */
+function progressGauge(days,res){
+  const r=Math.abs(res);
+  if(days<=1)return{cls:'',txt:'首夜為屈光變化最大之日(CLEAR),殘餘屬常態,不評進度'};
+  if(days<=7){
+    if(r<=0.50)return{cls:'ok',txt:'符合 CLEAR 預期(1 週內應達目標效果)'};
+    if(r<=1.00)return{cls:'warn',txt:'較 CLEAR 1 週達標預期略落後——優先查依從性與置中;原廠窗口(14–30天)內仍可觀察'};
+    return{cls:'warn',txt:'明顯落後(1週殘餘>1.00D)——檢查依從性、置中、初始K值品質與鏡片狀況'};
+  }
+  if(days<30){
+    if(r<=0.25)return{cls:'ok',txt:'已達標(殘餘≤0.25D)'};
+    if(r<=0.75)return{cls:'warn',txt:'略落後,仍在原廠 14–30 天窗口內,滿月評估'};
+    return{cls:'warn',txt:'落後(殘餘>0.75D)——依從性/置中/K值逐項排查'};
+  }
+  if(r<=0.25)return{cls:'ok',txt:'達標且穩定'};
+  return{cls:'warn',txt:'滿月後仍未達標——進入調整路徑(矯正不足規則)'};
+}
+/* 回診檢查清單(Euclid Module 4) */
+const VISIT_CHECK={
+ 1:{t:'隔日回診(首夜後晨間,戴鏡報到)',items:['戴鏡時:裂隙燈評估鏡片移動與是否吸附(adherence)','戴鏡時:裸視視力、BCVA、戴片 OR','取鏡後:BCVA、球柱面驗光、角膜地形圖、角膜健康(染色)','官方預期:一夜通常未達全矯正、置中可能尚未理想——屬正常,勿急於調整','無臨床徵候與併發症 → 指示續戴至下次回診(1 週)']},
+ 7:{t:'1 星期回診(晨間)',items:['戴鏡時:裂隙燈評估鏡片移動','戴鏡時:裸視視力、BCVA、戴片 OR','取鏡後:BCVA、球柱面驗光','取鏡後:角膜地形圖','取鏡後:角膜健康檢查(染色)','確認治療持續進展(一夜未全矯正屬正常)']},
+ 14:{t:'2 星期回診',items:['同 1 週檢查全套(裸視/BCVA/OR/驗光/topo/角膜健康)','評估是否接近完全矯正(多數患者 14–30 天達成)','檢視置中與治療區型態,必要時依規則調整']},
+ 21:{t:'3 星期回診',items:['同 2 週檢查全套','仍未達全矯正:確認依從性(每晚配戴、睡眠時數)後持續觀察至滿月']},
+ 30:{t:'1 個月回診(建議傍晚)',items:['傍晚檢查:評估夜間至傍晚的日內回退(regression)','裸視視力與殘餘度數','topo 確認 bulls-eye 品質與治療區涵蓋瞳孔','角膜健康(染色、水腫)與鏡片狀況檢查','未達標:此時點起可依判讀套用調整規則']},
+ 90:{t:'3 個月回診(建議傍晚)',items:['比照 6 個月項目:傍晚回退評估、裸視、topo、角膜健康','鏡片狀況(沉積、刮痕、參數變形)檢查','近視控制指標:建議量測眼軸/驗光比對基線']}};
+function updVisit(){
+  const d=parseInt($('ptDur').value), v=VISIT_CHECK[d];
+  $('visitCheck').innerHTML='<b>本次回診官方檢查清單:'+v.t+'</b><ul style="margin-top:8px">'+v.items.map(x=>'<li>'+x+'</li>').join('')+'</ul><div class="src">Euclid 官方時程:配鏡隔日晨間 → 1 週晨間 → 1 個月傍晚 → 6 個月傍晚 → 1 年;傍晚檢查用於評估夜間回退。出處:Euclid 認證 Module 4</div>';
+}
+$('ptDur').addEventListener('change',updVisit);updVisit();
+
+/* 時程規則(Euclid Module 4/5):7–14天內不建議換片;14–30天達完全矯正 */
+function durationGate(days,cls,res){
+  if(days===1){
+    if(cls==='理想')return{wait:false,msg:'首夜即呈理想型態,優於官方預期(一夜通常未達全矯正);續戴並於 1 週回診確認進展。'};
+    return{wait:true,msg:'首夜後置中未達理想與未全矯正屬官方預期之正常現象(Module 4),除鏡片吸附、明顯染色或疼痛等安全徵候外,不做任何調整;續戴至 1 週回診再評估。'};
+  }
+  if(days<14){
+    if(cls==='理想'&&Math.abs(res)<=0.25)return{wait:false,msg:'配適理想,依原廠時程持續配戴,一週/一個月回診追蹤。'};
+    return{wait:true,msg:'原廠建議配戴 7–14 天後才考慮換片(治療需時間到位);目前 '+days+' 天,除非醫師判斷有安全疑慮,建議先持續配戴並於滿 2 週回診再評估。判定治療不佳前,先驗證依從性:每晚配戴(文獻:每週 >6 天配戴者鏡片吸附風險較低)、睡眠時數足夠(約 8 小時)、定期去蛋白清潔(與白天視力清晰度相關);置中良好時許多問題會隨配戴天數自行改善,參數不宜頻繁更動。'};
+  }
+  if(days<30&&Math.abs(res)>0.25&&cls==='理想')
+    return{wait:true,msg:'多數患者於 14–30 天達完全矯正;目前 '+days+' 天且 topo 理想,殘餘 '+res.toFixed(2)+'D 可能仍會進步,建議滿 1 個月再評估是否加深 target。'};
+  return{wait:false,msg:null};
+}
+
+async function analyzePost(){
+  if(!localStorage.getItem('okfit_url')){$('r6').innerHTML=NO_AI;return;}
+  if(!imgs.pt){$('r6').innerHTML='<div class="card warn">請先上傳戴後 topo 圖。</div>';return;}
+  $('r6').innerHTML='<div class="card"><span class="spin"></span> AI 判讀中…</div>';
+  const days=parseInt($('ptDur').value), res=parseFloat($('ptRes').value)||0,
+        toric=$('ptToric').value==='y', sym=$('ptSym').value;
+  let ctx='戴後角膜地形圖。已配戴 '+$('ptDur').selectedOptions[0].textContent+'。'
+    +(sym?'患者主觀:'+sym+'。':'');
+  try{
+    const j=await callAI([{type:'image',source:{type:'base64',...imgs.pt}},{type:'text',text:ctx+'\n\n'+PROMPT_PT}]);
+    renderPost(j,days,res,toric);
+  }catch(e){$('r6').innerHTML='<div class="card warn">判讀失敗:'+e.message+'</div>';}
+}
+
+function renderPost(j,days,res,toric){
+  const cls=j.classification;
+  const good=cls==='理想'&&Math.abs(res)<=0.25;
+  let h='<div class="card result"><div class="big '+(good?'ok':(cls==='無法判讀'?'':'warn'))+'">'+cls
+    +(cls==='理想'&&Math.abs(res)>0.25?'(但有殘餘度數)':'')+'</div>';
+  h+='<span class="tag">AI 信心:'+(j.confidence||'—')+'</span><span class="tag">圖類型:'+(j.map_type||'—')+'</span><span class="tag">配戴 '+days+' 天</span><span class="tag">殘餘 '+res.toFixed(2)+'D</span>';
+  const pg=progressGauge(days,res);
+  h+='<p class="'+pg.cls+'" style="margin-top:8px"><b>治療進度對照:</b>'+pg.txt+'</p><p class="src">依據:CLEAR 2021(首夜變化最大、1週內達目標)+ Euclid Module 4(14–30天完全矯正);分級門檻為系統操作化設定。</p>';
+  if(j.topo_findings&&j.topo_findings.length)h+='<h2>Topo 觀察</h2><ul>'+j.topo_findings.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+
+  /* 時程守門 */
+  const gate=durationGate(days,cls,res);
+  h+='<h2>處置建議(依原廠時程與調整規則)</h2>';
+  if(gate.msg)h+='<p'+(gate.wait?' class="warn"':'')+'>'+gate.msg+'</p>';
+  if(!gate.wait){
+    if(cls==='理想'&&Math.abs(res)>0.25){
+      h+='<p>Topo 呈理想 bulls-eye 但殘餘 '+res.toFixed(2)+'D → <b>矯正不足</b>:依殘餘度數加深 target。';
+      const tgt=parseFloat($('ptTarget').value);
+      if(!isNaN(tgt))h+='例:目前 target '+tgt.toFixed(2)+' → 新 target <b>'+round25(tgt+res).toFixed(2)+'</b>。';
+      h+='(若鏡片已配戴超過一年,先評估鏡片老化變形,可考慮先換新片或折衷調整;初始度數 >−4.00 者依 FDA 資料本就有較高殘餘機率,調整前先確認是否屬預期範圍)</p><div class="src">出處:Euclid 認證 Module 5 + ABB Troubleshooting + FDA P010062</div>';
+    }else if(cls!=='理想'&&cls!=='無法判讀'){
+      const key=(cls==='治療區偏小'||cls==='橢圓/不完整治療區')?null:cls;
+      if(key&&ADJUST[key]){
+        let act=ADJUST[key].act;
+        h+='<p>'+act+'</p><div class="src">出處:'+ADJUST[key].src+'</div>';
+        /* 具體新 AC 數值(0.1mm = 0.50D;0.05mm = 0.25D) */
+        const curAC=parseFloat($('ptAC').value);
+        if(!isNaN(curAC)&&!toric){
+          let dir=0;
+          if(cls==='上方偏位'||cls==='偏鬆(過平)')dir=+0.50;   // 調陡 = D 值增加
+          if(cls==='下方偏位'||cls==='偏緊(過陡)')dir=-0.50;   // 放平 = D 值減少
+          if(dir!==0){
+            const nAC=round25(curAC+dir);
+            h+='<p>換算:目前 AC '+curAC.toFixed(2)+'D('+D2MM(curAC).toFixed(2)+'mm)→ '+(dir>0?'調陡':'放平')+' 0.50D(0.1mm)→ 建議新 AC <b>'+nAC.toFixed(2)+' D</b>('+D2MM(nAC).toFixed(2)+' mm)。半階調整:0.25D = 0.05mm。</p>';
+          }
+        }else if(!isNaN(curAC)&&toric){
+          h+='<p class="src">散光片:調整走 toricity 路徑(±15µm ≈ 0.50D),AC 本體通常不動;新 toricity 值請依原廠散光片參數規則與顧問確認。</p>';
+        }
+        if(toric&&(cls==='上方偏位'||cls==='下方偏位'))h+='<p class="src">本例為散光片/角膜散光:適用 toricity 調整路徑(±0.50D / 15µm)。</p>';
+        const symTxt=$('ptSym').value;
+        if(symTxt)h+='<p class="src">症狀對照:偏位常伴矯正不足、日內回退、散光增加、鬼影/眩光——患者主觀「'+symTxt+'」'+(/(眩光|鬼影|雙影|模糊|回退|浮動)/.test(symTxt)?'與此型態相符,支持調整。':'與此型態之關聯請由醫師評估。')+'</p>';
+        h+='<p class="src">取片後若見角膜點狀染色、負染色或基質混濁,表示鏡片機械性接觸或缺氧,調整時一併處理(專業文獻)。</p>';
+        h+='<p class="src">文獻註記:若偏位輕微、視力與症狀可接受,研究顯示輕度治療區偏位對近視控制可能有利——醫師可評估暫不改片,避免頻繁換片(Chu 2023、Li 2022,引自 CLS 2024/3)。</p>';
+        if(cls==='側向偏位'){
+          const d=parseFloat($('ptDia').value), hv=parseFloat($('ptHvid').value);
+          if(!isNaN(d)){
+            const nd=Math.round((d+0.4)*10)/10;
+            if(nd>11.6){h+='<p class="warn">目前直徑 '+d.toFixed(1)+' → 加 0.4mm 為 '+nd.toFixed(1)+',已超過原廠範圍上限 11.6mm:直徑無法再加大,考慮改用 0.75D 散光設計。</p>';}
+            else if(!isNaN(hv)&&nd>hv-0.6){h+='<p class="warn">建議新直徑 '+nd.toFixed(1)+'mm 超過 HVID('+hv.toFixed(1)+')−0.6 = '+(hv-0.6).toFixed(1)+'mm 上限:HVID 不允許加大直徑,依原廠規則考慮改用 0.75D 散光設計。</p>';}
+            else{h+='<p>目前直徑 '+d.toFixed(1)+'mm → 建議新直徑 <b>'+nd.toFixed(1)+'mm</b>'+(isNaN(hv)?'(請自行確認不超過 HVID−0.6mm)':'(HVID '+hv.toFixed(1)+' 驗證通過,上限 '+(hv-0.6).toFixed(1)+'mm)')+'。</p>';}
+          }else{h+='<p class="src">輸入目前鏡片直徑與 HVID,可自動計算新直徑並驗證上限。</p>';}
+        }
+      }else{
+        if(cls==='橢圓/不完整治療區'){
+          h+='<p>橢圓/不完整治療區代表鏡片在散光角膜上夜間 rocking、周邊著陸不均:建議加入<b>散光周邊弧(toric periphery)</b>穩定鏡片、均化治療區。啟用通則:中央散光 >1.00D 且/或散光延伸至輪部;可搭配 SHD 計算器(試片選擇分頁)量化。紅環淺或不均時,調整方向為<b>增加</b> sag 讓組織有空間移往中周邊,而非降低 sag。</p><div class="src">出處:Contact Lens Spectrum 2024/3(Potter)+ Euclid Module 3</div>';
+        }else h+='<p>治療區偏小且侵入瞳孔區(常伴眩光):若非以近視控制為首要目標且鏡片置中,可考慮 POZ 加大 0.4mm(最大 6.6);若以近視控制為主,與家長討論治療區大小的取捨;若鏡片偏位,先依偏位規則處理。</p><div class="src">出處:Euclid《POZ Recommendations》+ ABB Troubleshooting</div>';
+      }
+      if(cls==='中央島/Vaulting'){
+        const stain=$('ptStain').value, sign=j.central_peak_sign||'';
+        h+='<h2>真性 / 假性中央島鑑別(調整方向相反,務必先鑑別)</h2>';
+        if(sign==='負'||stain==='y'){
+          h+='<p class="warn">⚠ 特徵指向<b>假性中央島</b>('+(sign==='負'?'差異圖中央峰值為負':'')+(sign==='負'&&stain==='y'?'且':'')+(stain==='y'?'取片後點狀染色/上皮受壓':'')+'):成因為<b>配適過平</b>,常伴 smiley-face 與 placido 環紋扭曲。處置方向與真性相反:應<b>增加</b> sag(AC 調陡 0.1mm),切勿再放平 RC。</p>';
+        }else if(sign==='正'&&stain==='n'){
+          h+='<p>特徵指向<b>真性中央島</b>(差異圖中央峰值為正、取片後無染色):配適過陡、sag 過高 → RC 放平 0.2mm(1.00D)。可伴 OR 無明確終點、BCVA 降超過一行等症狀。</p>';
+        }else{
+          h+='<p class="warn">尚無法鑑別真/假中央島:請確認「取片後角膜染色」並提供差異圖(中央峰值正負)。真性(過陡)→ RC 放平;假性(過平)→ AC 調陡——方向相反,鑑別前勿調整。</p>';
+        }
+        h+='<p class="src">細微中央島常被 topo 軟體漏判(被視為資料不一致);疑似時可用前節 OCT 上皮厚度圖或 Fourier 剖面確認。真性中央島典型症狀:愈到下午視力愈差(中央塑形日內回彈)。</p>';
+        h+='<div class="src">出處:Contact Lens Spectrum 2020/3(Frogozo)+ RCCL 2025/2 + Euclid Module 5</div>';
+        if(j.map_type!=='差異圖')h+='<p class="warn">⚠ 本判讀非依差異圖,中央島/Vaulting 可能誤判(原廠建議以軸向差異圖確認),請補差異圖再確認後調整。</p>';
+      }
+    }else if(cls==='理想'){
+      h+='<p class="ok">配適與矯正皆理想:持續配戴,依原廠時程追蹤(1個月/6個月傍晚回診評估夜間回退)。</p><div class="src">出處:Euclid 認證 Module 4</div>';
+    }
+  }
+  /* 時段別視力抱怨鑑別樹(RCCL 2025) */
+  const st=$('ptSymTime').value;
+  if(st){
+    h+='<h2>時段別視力抱怨鑑別(專業文獻)</h2>';
+    if(st==='am')h+='<p>晨間取片後數小時內模糊,兩個方向:(1)<b>晨間過矯/遠視化</b>——早上矯正過頭,日內回退後才清晰;(2)<b>取片方式造成的中央上皮損傷</b>——鏡片吸附狀態下用吸棒硬拔會產生負壓,造成瞳孔中央染色,視力於上皮修復後(數小時)恢復。檢查:晨間驗光是否過正、角膜中央染色;衛教:取片前點人工淚液、以下眼瞼推動鏡片解除吸附,勿在吸附時硬拔。</p>';
+    if(st==='pm')h+='<p>午後起視力下降,先排除<b>真性中央島</b>(其典型症狀正是愈到下午愈差);排除後多為<b>塑形回退過快</b>:(1)確認睡眠 7–8 小時(不足影響中央視覺品質);(2)確認是否<b>午睡未戴鏡</b>——即使只午睡 30 分鐘,角膜也會加速回復,建議午睡 ≥30 分鐘者戴鏡午睡;(3)以上皆排除 → 角膜生物力學回退快,考慮增加加深值(compression factor),文獻註記:鏡片曲率變化不完全轉譯為塑形量,欲補 −1.00D 效果、設計端常需約 1.5 倍變化——實際由原廠演算法處理,向顧問說明殘餘量即可。</p>';
+    if(st==='night')h+='<p>夜間眩光/光暈,先排除偏位與治療區問題;皆正常則<b>問題在瞳孔而非鏡片</b>——暗處瞳孔大於治療區,周邊加光環進入視軸。文獻記載之醫師處置選項:必要時 brimonidine 縮瞳藥水、低度近視眼鏡輔助夜用;瞳孔日夜變化大者,文獻另載低劑量 atropine(0.025–0.05%)減少瞳孔變動幅度以利神經適應——藥物處置由醫師評估決定。勿急於改小鏡片參數。</p>';
+    if(st==='all')h+='<p>全天視力不佳:最常見原因為<b>初始 K 值量測誤差造成的過矯/欠矯</b>(假設驗光正確),或角膜生物力學反應過強/過弱;逐項確認:基線 topo 品質、目前差異圖治療量、殘餘度數、鏡片是否老化(著陸弧隨老化變陡、淚液庫蛋白沉積降低液壓效果)。無明確 topo 治療痕跡但自述有戴 → 懷疑午睡未戴或依從性問題。</p>';
+    h+='<div class="src">出處:Review of Cornea & Contact Lenses 2025/2(Simard/Gagnon/Michaud)。視力標準參考:單眼至少 20/25、雙眼可達 20/20(大學診所指引)。</div>';
+  }
+  h+='<p class="src" style="margin-top:10px">換片提醒:前一副鏡片的角膜塑形殘留會妨礙新片置中——連續換片仍不置中時,可評估停戴 washout 待角膜回復後重新驗配(專業文獻);鏡片老化會使著陸弧變陡、淚液庫蛋白沉積降低液壓,老鏡片本身即可能是型態惡化原因。</p>';
+  h+='<p class="src" style="margin-top:6px">AI 判讀僅供輔助,調整規則為系統內建原廠明文;實際處置由驗配醫師決定。</p></div>';
+  $('r6').innerHTML=h;
+}
+
+/* ---------- 處方 ---------- */
+/* 片種下拉初始化與顏色連動 */
+(function(){
+  const sel=$('pProd');
+  PRODUCTS.forEach(p=>{
+    const o=document.createElement('option');
+    o.value=p.id;o.textContent=p.brand+'｜'+p.name+(p.avail?'':'(準備中)');
+    if(!p.avail)o.disabled=true;
+    sel.appendChild(o);});
+  sel.onchange=()=>{
+    const p=PRODUCTS.find(x=>x.id===sel.value);
+    const cSel=$('pColor');cSel.innerHTML='';
+    p.colors.forEach(c=>{const o=document.createElement('option');
+      o.value=c;o.textContent=c+' '+({G:'綠',B:'藍',V:'紫'}[c]);cSel.appendChild(o);});};
+  sel.onchange();
+})();
+
+function calcRx(){
+  const t=parseFloat($('pTrial').value),or=parseFloat($('pOR').value)||0,
+        ac=parseFloat($('pAC').value),dia=parseFloat($('pDia').value),
+        c=parseFloat($('pC').value),color=$('pColor').value;
+  let extra=$('pExtra').value==='custom'?parseFloat($('pExtraCustom').value):parseFloat($('pExtra').value);
+  if(isNaN(t)||isNaN(ac)||isNaN(dia)){$('r3').innerHTML='<div class="card warn">請輸入試片度數、AC、直徑。</div>';return;}
+  if(isNaN(extra)){$('r3').innerHTML='<div class="card warn">請輸入加深值。</div>';return;}
+  const target=round25(t+or+extra);
+  const prod=PRODUCTS.find(x=>x.id===$('pProd').value);
+  const isToric=!isNaN(c);
+  const parts=['T'+target.toFixed(2),ac.toFixed(2)];
+  if(isToric)parts.push('C-'+Math.abs(c).toFixed(2));
+  parts.push(dia.toFixed(1),color);
+  const rx=parts.join('/');
+  let h='<div class="card result"><div class="big">'+rx+'</div>';
+  h+='<p style="margin-top:8px">target = 試片 '+fmt(t)+' + OR '+fmt(or)+' + 加深 '+fmt(extra)+' = <b>'+target.toFixed(2)+' D</b></p>';
+  h+='<span class="tag">'+prod.brand+'｜'+prod.name+'</span>';
+  if(isToric)h+='<span class="tag">散光片 toricity C-'+Math.abs(c).toFixed(2)+'</span><span class="tag">Toric=定位穩定設計,非散光光學矯正</span>';
+  h+='<span class="tag">顏色 '+color+'('+({G:'綠',B:'藍',V:'紫'}[color])+')</span>';
+  const orc=parseFloat($('pORc').value);
+  if(!isNaN(orc)&&Math.abs(orc)>=0.75)h+='<p class="warn" style="margin-top:8px">⚠ 戴片 OR 柱面 '+orc.toFixed(2)+'D(≥0.75):殘餘散光偏高——請回檢配適置中與 50% 規則,並評估是否需散光設計;target 公式僅計入球面,散光處置由醫師判斷。</p>';
+  /* 依 V5 規格驗證 */
+  const limit=isToric?prod.cylTp:prod.sph;
+  if(Math.abs(target)>limit)h+='<p class="warn" style="margin-top:8px">⚠ Target '+target.toFixed(2)+' 超出 '+prod.name+' 之'+(isToric?'散光':'球面')+' TP 上限 −'+limit.toFixed(2)+'(V5 規格),請改選片種或由醫師確認。</p>';
+  if(extra<=-1.50)h+='<p class="src">加深值文獻參考:壓縮量 1.75D 之一週全矯正率 92%(vs 0.75D 為 64%)、眼軸控制效果多約 23%,但球面像差增加、夜間視覺代價較高(Tang 等,引自 2024 文獻回顧)——高加深的取捨請與家長溝通。</p>';
+  h+='<div class="src">公式與格式:優立得台灣端實務;度數規格依《全品項內外價 V5》;加深值 −0.50~−2.00D(可自訂更深)依醫師針對患者需求(常用 −0.75);文獻:較高壓縮量到位更快、控制更強、像差較多。</div></div>';
+  $('r3').innerHTML=h;
+}
+</script>
+</body>
+</html>
