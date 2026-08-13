@@ -613,18 +613,34 @@ function pickImg(k){const [fi,pv,dp]=IMGMAP[k];const f=$(fi);f.onchange=()=>{
 
 function parseAIJson(raw){
   let t=raw.replace(/```json|```/gi,'').trim();
-  const a=t.indexOf('{'), b=t.lastIndexOf('}');
-  if(a>-1&&b>a)t=t.slice(a,b+1);
-  /* 寬容修復常見的非標準 JSON:結尾多小數點(44.)、開頭缺零(.75)、多餘逗號 */
-  t=t.replace(/(\d)\.(?=\s*[,}\]])/g,'$1')
-     .replace(/([:\s\[,])\.(\d)/g,'$10.$2')
-     .replace(/,\s*([}\]])/g,'$1');
-  try{return JSON.parse(t);}
-  catch(e){
-    /* 最後手段:把仍無法解析的裸值轉字串再試一次 */
-    try{return JSON.parse(t.replace(/:\s*(-?\d+(?:\.\d+)?)([^\d",}\]]+)"?/g,':"$1$2"'));}
-    catch(e2){throw new Error('AI 回覆格式異常:'+t.slice(0,140));}
+  const a=t.indexOf('{');
+  if(a>-1)t=t.slice(a);
+  const b=t.lastIndexOf('}');
+  if(b>-1)t=t.slice(0,b+1);
+  /* 先試原文(避免修復器誤傷合法 JSON) */
+  try{return JSON.parse(t);}catch(e){}
+  /* 修復一:控制字元、尾點數字、缺零、多餘逗號 */
+  let s=t.replace(/[\u0000-\u001F]+/g,' ')
+         .replace(/(\d)\.(?=\s*[,}\]])/g,'$1')
+         .replace(/([:\s\[,])\.(\d)/g,'$1'+'0.$2')
+         .replace(/,\s*([}\]])/g,'$1');
+  try{return JSON.parse(s);}catch(e){}
+  /* 修復二:截斷補完——去掉最後一個不完整的鍵值,補齊括號 */
+  let u=s;
+  const lastComma=u.lastIndexOf(',');
+  if(lastComma>-1){
+    const tail=u.slice(lastComma+1);
+    if((tail.match(/"/g)||[]).length%2===1 || /:\s*$/.test(tail) || !/[}\]"\d el]\s*$/.test(u))u=u.slice(0,lastComma);
   }
+  u=u.replace(/,\s*$/,'').replace(/:\s*$/,':null');
+  const opens=(u.match(/{/g)||[]).length-(u.match(/}/g)||[]).length;
+  const openA=(u.match(/\[/g)||[]).length-(u.match(/\]/g)||[]).length;
+  if((u.match(/"/g)||[]).length%2===1)u+='"';
+  for(let i=0;i<openA;i++)u+=']';
+  for(let i=0;i<opens;i++)u+='}';
+  try{return JSON.parse(u);}catch(e){}
+  console.error('AI raw:',raw);
+  throw new Error('AI 回覆格式異常(已記錄於瀏覽器主控台):'+t.slice(0,200));
 }
 async function callAI(content){
   const url=cfgUrl(),tok=cfgTok();
