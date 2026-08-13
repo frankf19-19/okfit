@@ -370,7 +370,7 @@ ul{margin:6px 0 6px 22px;}
 </section>
 
 <div class="card" id="setupCard" style="border-color:var(--gold)">
-  <b>系統設定</b>(選填——僅啟用 AI 看圖判讀時需要;免費版留空即可)
+  <b>系統設定(進階)</b>——連線已由系統內建,此處留空即可;僅在需要覆寫內建設定時填寫
   <div class="grid" style="margin-top:10px">
     <div class="field"><label>Cloudflare Worker 網址</label><input id="cfgUrl" placeholder="https://okfit.你的帳號.workers.dev"></div>
     <div class="field"><label>存取密碼(APP_TOKEN)</label><input id="cfgTok" type="password"></div>
@@ -382,7 +382,13 @@ ul{margin:6px 0 6px 22px;}
 
 <script>
 /* ---------- 通用 ---------- */
+/* ====== 內建連線設定(由管理者維護;填入後所有裝置免設定)====== */
+const DEFAULT_WORKER_URL = "https://okfit-proxy.frankccc199.workers.dev";
+const DEFAULT_APP_TOKEN  = "hv2026ok";   // 與 Worker 檔內 APP_TOKEN 一致
+/* ================================================================ */
 const $=id=>document.getElementById(id);
+function cfgUrl(){return localStorage.getItem('okfit_url')||DEFAULT_WORKER_URL;}
+function cfgTok(){return localStorage.getItem('okfit_tok')||DEFAULT_APP_TOKEN;}
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>goTab(b.dataset.p));
 function goTab(p){
   document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x.dataset.p===p));
@@ -606,7 +612,7 @@ function pickImg(k){const [fi,pv,dp]=IMGMAP[k];const f=$(fi);f.onchange=()=>{
   rd.readAsDataURL(file);};f.click();}
 
 async function callAI(content){
-  const url=localStorage.getItem('okfit_url'),tok=localStorage.getItem('okfit_tok');
+  const url=cfgUrl(),tok=cfgTok();
   if(!url)throw new Error('AI 功能未啟用(免費版)——見頁面提示');
   const rs=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','X-App-Token':tok||''},
     body:JSON.stringify({messages:[{role:'user',content}]})});
@@ -654,7 +660,7 @@ function manualPost(){
   renderPost({classification:c,confidence:'醫師判讀',map_type:'依醫師判讀',central_peak_sign:'',topo_findings:[]},days,res,toric);
 }
 async function analyze(){
-  if(!localStorage.getItem('okfit_url')){$('r2').innerHTML=NO_AI;return;}
+  if(!cfgUrl()){$('r2').innerHTML=NO_AI;return;}
   if(!imgs.fl){$('r2').innerHTML='<div class="card warn">請先上傳螢光染色圖。</div>';return;}
   $('r2').innerHTML='<div class="card"><span class="spin"></span> AI 判讀中…</div>';
   const content=[{type:'image',source:{type:'base64',...imgs.fl}}];
@@ -689,7 +695,7 @@ const PROMPT_BT=`你是角膜地形圖數值抄錄員。任務:只抄錄影像�
 {"readable":true|false,"flat_k":數值或null,"steep_k":數值或null,"hvid":數值或null,"e_value":數值或null,"image_quality":"良好|欠佳|無法評估","quality_issues":["環紋不完整/眼瞼陰影/失焦/淚膜破裂痕跡等,無則空陣列"],"source_labels":"你讀取的原始標籤與數字(供人工核對)","notes":"讀取限制說明"}`;
 
 async function analyzeTopoFit(){
-  if(!localStorage.getItem('okfit_url')){$('r7').innerHTML=NO_AI+'<div class="card"><p>免費版替代路徑:改用「<b>試片選擇</b>」分頁,手動輸入 topo 圖上的 SimK 平K/陡K 與 HVID,即可得到完全相同的試片與片種建議。</p></div>';return;}
+  if(!cfgUrl()){$('r7').innerHTML=NO_AI+'<div class="card"><p>免費版替代路徑:改用「<b>試片選擇</b>」分頁,手動輸入 topo 圖上的 SimK 平K/陡K 與 HVID,即可得到完全相同的試片與片種建議。</p></div>';return;}
   if(!imgs.bt){$('r7').innerHTML='<div class="card warn">請先上傳原始 topo 圖。</div>';return;}
   const sph=parseFloat($('tSph').value);
   if(isNaN(sph)){$('r7').innerHTML='<div class="card warn">請輸入球面度數 SPH(驗光單數值,topo 圖上沒有)。</div>';return;}
@@ -843,7 +849,7 @@ function durationGate(days,cls,res){
 }
 
 async function analyzePost(){
-  if(!localStorage.getItem('okfit_url')){$('r6').innerHTML=NO_AI;return;}
+  if(!cfgUrl()){$('r6').innerHTML=NO_AI;return;}
   if(!imgs.pt){$('r6').innerHTML='<div class="card warn">請先上傳戴後 topo 圖。</div>';return;}
   $('r6').innerHTML='<div class="card"><span class="spin"></span> AI 判讀中…</div>';
   const days=parseInt($('ptDur').value), res=parseFloat($('ptRes').value)||0,
