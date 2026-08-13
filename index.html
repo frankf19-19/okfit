@@ -611,6 +611,21 @@ function pickImg(k){const [fi,pv,dp]=IMGMAP[k];const f=$(fi);f.onchange=()=>{
     $(dp).classList.add('has');};
   rd.readAsDataURL(file);};f.click();}
 
+function parseAIJson(raw){
+  let t=raw.replace(/```json|```/gi,'').trim();
+  const a=t.indexOf('{'), b=t.lastIndexOf('}');
+  if(a>-1&&b>a)t=t.slice(a,b+1);
+  /* 寬容修復常見的非標準 JSON:結尾多小數點(44.)、開頭缺零(.75)、多餘逗號 */
+  t=t.replace(/(\d)\.(?=\s*[,}\]])/g,'$1')
+     .replace(/([:\s\[,])\.(\d)/g,'$10.$2')
+     .replace(/,\s*([}\]])/g,'$1');
+  try{return JSON.parse(t);}
+  catch(e){
+    /* 最後手段:把仍無法解析的裸值轉字串再試一次 */
+    try{return JSON.parse(t.replace(/:\s*(-?\d+(?:\.\d+)?)([^\d",}\]]+)"?/g,':"$1$2"'));}
+    catch(e2){throw new Error('AI 回覆格式異常:'+t.slice(0,140));}
+  }
+}
 async function callAI(content){
   const url=cfgUrl(),tok=cfgTok();
   if(!url)throw new Error('AI 功能未啟用(免費版)——見頁面提示');
@@ -619,7 +634,7 @@ async function callAI(content){
   if(!rs.ok)throw new Error('HTTP '+rs.status+':'+await rs.text());
   const data=await rs.json();
   const txt=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
-  return JSON.parse(txt.replace(/```json|```/g,'').trim());
+  return parseAIJson(txt);
 }
 
 /* ---------- AI 判讀 ---------- */
