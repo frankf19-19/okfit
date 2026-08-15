@@ -201,7 +201,17 @@ ul{margin:6px 0 6px 22px;}
   <div class="field"><label>是否為散光片</label><select id="ctxToric"><option value="n">否</option><option value="y">是</option></select></div>
   <div class="field"><label>戴片時間</label><select id="ctxWear"><option>戴片後即時(診間評估)</option><option>過夜配戴後回診</option></select></div>
 </div>
-<button class="btn" onclick="analyze()">AI 判讀</button>
+<div class="grid">
+  <div>
+    <div class="field"><label>醫師判讀(建議以此為準)</label>
+      <select id="flManual"><option value="">— 選擇判讀結果 —</option><option>理想</option><option>偏鬆(過平)</option><option>偏緊(過陡)</option><option>上方偏位</option><option>下方偏位</option><option>側向偏位</option><option>中央島/Vaulting</option></select></div>
+    <button class="btn" onclick="manualFl()">依醫師判讀出調整建議</button>
+  </div>
+  <div>
+    <div class="field"><label>AI 判讀(實驗性,僅供參考)</label></div>
+    <button class="btn sec" onclick="analyze()">AI 判讀(輔助)</button>
+  </div>
+</div>
 <div id="r2"></div>
 </section>
 
@@ -254,7 +264,17 @@ ul{margin:6px 0 6px 22px;}
   </div>
 </div>
 <div class="card" id="visitCheck" style="border-left:5px solid var(--blue)"></div>
-<button class="btn" onclick="analyzePost()">AI 判讀戴後 topo</button>
+<div class="grid">
+  <div>
+    <div class="field"><label>醫師判讀(建議以此為準)</label>
+      <select id="ptManual"><option value="">— 選擇判讀結果 —</option><option>理想</option><option>上方偏位</option><option>下方偏位</option><option>側向偏位</option><option>中央島/Vaulting</option><option>治療區偏小</option><option>橢圓/不完整治療區</option></select></div>
+    <button class="btn" onclick="manualPost()">依醫師判讀出處置與進度</button>
+  </div>
+  <div>
+    <div class="field"><label>AI 判讀(實驗性,僅供參考)</label></div>
+    <button class="btn sec" onclick="analyzePost()">AI 判讀(輔助)</button>
+  </div>
+</div>
 <div id="r6"></div>
 </section>
 
@@ -605,36 +625,103 @@ const ADJUST={
   '中央島/Vaulting':{act:'sag 過高:RC 放平 0.2mm(1.00D)。',src:'Euclid 認證 Module 5 + ABB'},
   '無法判讀':{act:'影像品質不足或非螢光染色圖,請重新拍攝(建議鈷藍光下、對焦清晰、鏡片全貌入鏡)。',src:'—'}};
 
-const PROMPT=`你是角膜塑型片(orthokeratology)螢光染色判讀輔助,輸入可能為單張照片或短影片。僅依影像可見證據判讀,不得臆測。
-若為影片:同時評估動態——眨眼時鏡片移動量(理想約 1–2mm;<1mm 偏緊/吸附傾向、>2mm 偏鬆)、移動方向與回位,於 movement 欄回報;圖形判讀取影格中最清晰穩定者。
-Euclid 鏡片結構(由中心至周邊,標準直徑 10.6mm):BC(標準寬 6.2mm,較角膜平、正壓區,形成 ≥5mm 治療區)→ RC(顯著較陡,環狀淚液庫、負壓區,螢光下應為亮環)→ AC1(半徑約等於平K)+ AC2(較 AC1 平 1.50D,貼合周邊漸平的角膜,著陸區,螢光下應為暗帶)→ 周邊弧(最平,edge lift 亮緣)。散光片(Toric)僅 RC 與 AC 非對稱,BC 與周邊弧對稱。
-判讀標準(Euclid 原廠明文):
-理想配適:鏡片置中不壓迫輪部;瞳孔周圍呈螢光環(RC 淚液環);360 度有足夠 edge lift;(動態)眨眼移動約 1–2mm。
-偏緊(過陡/sag過高):中央 RC 下淚液堆積(中央亮池)、無清晰 bulls-eye、edge lift 不足;常伴下方偏位。
-偏鬆(過平/sag不足):中央 touch 面積過大過暗、RC 環細弱、edge lift 過多;常伴上方偏位。
-重要:BOZR 下方理想淨空僅約 5–10µm,低於螢光可視門檻(約 20µm),故中央呈暗區屬「正常預期外觀」,不可僅憑中央偏暗即判偏鬆;偏鬆需同時符合 RC 環細弱/edge lift 過多等其他證據。
-偏位:治療區/鏡片中心相對瞳孔的位置(上方/下方/側向)。側向偏位:一側邊緣落在角膜內、另一側近鞏膜,通常直徑太小。
-中央島/Vaulting:RC 下中央淚池、無 bulls-eye。
-若同時提供 topo 圖:理想=完整紅環 bulls-eye;smiley-face=上方偏位;frowny-face=下方偏位;新月形切入中央=側向偏位;中央陡島=中央島。topo 與螢光證據需分開陳述。
-靜態照片無法評估移動量,movement 一律填 "無法由靜態影像評估"。
-只輸出 JSON,不加任何其他文字與 markdown:
-{"classification":"理想|偏鬆(過平)|偏緊(過陡)|上方偏位|下方偏位|側向偏位|中央島/Vaulting|無法判讀","confidence":"高|中|低","fluorescein_findings":["…"],"topo_findings":["…或空陣列"],"movement":"無法由靜態影像評估","notes":"其他觀察或影像品質限制"}`;
+const PROMPT=`你是角膜塑型片(orthokeratology)螢光染色判讀輔助,輸入可能為單張照片或短影片。
+【第一原則:寧可棄權,不可猜測】只依影像清楚可見的證據判讀;證據不足、影像模糊、曝光不當、螢光量不足時,一律回 classification:"無法判讀" 並說明缺什麼。錯誤的判讀會導致鏡片被改往錯誤方向,比不判讀更有害。
 
+【螢光顏色語意】綠色亮區=淚液厚(clearance/淚池);深色暗區=鏡片貼近角膜(alignment/touch);全片過亮=螢光過量、全片過暗=螢光不足或曝光問題,皆回無法判讀。
+
+【Euclid 鏡片分區(由中心至周邊,標準10.6mm)】BC 中央區:理想為淡暗均勻(淨空僅5–10µm,低於螢光可視門檻,暗屬正常,不可單憑中央暗判偏鬆);RC 環:應為明顯亮環(淚液庫);AC 著陸帶:應為均勻暗帶;周邊 edge:細亮緣。
+
+【判讀程序(必須依序)】
+1. 先逐區描述可見特徵:中央區(亮/暗/面積)、RC 環(亮度/寬度/完整度/均勻度)、著陸帶(均勻/局部壓迫)、edge(寬窄/均勻度)、整體同心度(圖形中心相對鏡片中心的偏移方向)。
+2. 影片另評估:眨眼時移動量(理想約1–2mm;<1mm 偏緊/吸附傾向、>2mm 偏鬆)與回位。
+3. 再依證據對照分類,分類必須同時滿足至少兩項對應證據,否則回"無法判讀":
+   偏緊(過陡):RC 亮環過寬過亮+edge 細弱+(影片)移動<1mm。
+   偏鬆(過平):中央大面積濃暗+RC 環細弱+edge 過寬+(影片)移動>2mm;常伴圖形上偏。
+   上方/下方/側向偏位:整體圖形明確偏離中心>約0.5mm 之方向。
+   理想:各區符合上述理想描述、同心良好、移動1–2mm。
+4. confidence:證據齊備且無矛盾=高;有次要矛盾=中;僅單一證據或影像品質欠佳=低(低信心時建議改回"無法判讀")。
+
+回覆只允許 JSON:
+{"classification":"理想|偏鬆(過平)|偏緊(過陡)|上方偏位|下方偏位|側向偏位|中央島/Vaulting|無法判讀","confidence":"高|中|低","fluorescein_findings":["逐區證據描述"],"movement":"影片移動量描述或未提供","notes":"限制與缺少的證據"}`
+
+function manualFl(){
+  const c=$('flManual').value;
+  if(!c){$('r2').innerHTML='<div class="card warn">請先選擇判讀分類。</div>';return;}
+  renderAI({classification:c,confidence:'醫師判讀',fluorescein_findings:[],topo_findings:[],movement:'依裂隙燈動態評估',notes:''});
+}
+function manualPost(){
+  const c=$('ptManual').value;
+  if(!c){$('r6').innerHTML='<div class="card warn">請先選擇判讀分類。</div>';return;}
+  const days=parseInt($('ptDur').value), res=parseFloat($('ptRes').value)||0, toric=$('ptToric').value==='y';
+  renderPost({classification:c,confidence:'醫師判讀',map_type:'依醫師判讀',central_peak_sign:'',topo_findings:[]},days,res,toric);
+}
+/* ===== 合成範本(few-shot 對照,自產零版權)===== */
+function exImg(draw){const cv=document.createElement('canvas');cv.width=cv.height=200;draw(cv);
+  return cv.toDataURL('image/jpeg',0.75).split(',')[1];}
+function flExemplars(){
+  return [
+    ['理想(bulls-eye:中央淡暗、RC亮環完整、著陸暗帶均勻、edge細亮緣)',exImg(cv=>drawSim(cv,0,0))],
+    ['偏緊/過陡(RC亮環過寬過亮、edge細弱、型態偏下)',exImg(cv=>drawSim(cv,-1.0,0))],
+    ['偏鬆/過平(中央濃暗面積大、RC環細弱、edge寬亮、型態偏上)',exImg(cv=>drawSim(cv,1.0,0))]
+  ];
+}
+function drawTopoEx(cv,type){
+  const ctx=cv.getContext('2d'),W=cv.width,H=cv.height,cx=W/2,cy=H/2;
+  let ox=0,oy=0,island=false;
+  if(type==='smiley')oy=-24;          /* 治療區上偏 */
+  if(type==='frowny')oy=24;           /* 治療區下偏 */
+  if(type==='island')island=true;
+  const img=ctx.createImageData(W,H);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const i=(y*W+x)*4, rc=Math.hypot(x-cx,y-cy);
+    let c;
+    if(rc>92){c=[180,180,185];}                       /* 角膜外 */
+    else{
+      const d=Math.hypot(x-cx-ox,y-cy-oy);
+      if(island&&d<13)c=[210,40,30];                  /* 中央島紅峰 */
+      else if(d<36)c=[40,80,210];                     /* 冷色壓平治療區 */
+      else if(d<46)c=[80,200,190];                    /* 過渡 */
+      else if(d<62)c=[215,45,30];                     /* 紅環(中周邊陡化) */
+      else if(d<72)c=[235,150,60];                    /* 橙過渡 */
+      else c=[150,205,110];                           /* 未變化背景 */
+    }
+    img.data[i]=c[0];img.data[i+1]=c[1];img.data[i+2]=c[2];img.data[i+3]=255;
+  }
+  ctx.putImageData(img,0,0);
+  ctx.strokeStyle='#333';ctx.beginPath();ctx.arc(cx,cy,26,0,7);ctx.stroke(); /* 瞳孔參考圈 */
+}
+function ptExemplars(){
+  return [
+    ['理想 bulls-eye(冷色治療區與紅環同心於瞳孔)',exImg(cv=>drawTopoEx(cv,'bull'))],
+    ['smiley face/上方偏位(治療區與紅環中心偏上)',exImg(cv=>drawTopoEx(cv,'smiley'))],
+    ['frowny face/下方偏位(治療區與紅環中心偏下)',exImg(cv=>drawTopoEx(cv,'frowny'))],
+    ['中央島(治療區中央出現暖色峰)',exImg(cv=>drawTopoEx(cv,'island'))]
+  ];
+}
+function packExemplars(exs,intro){
+  const c=[{type:'text',text:intro+'以下為「示意範例圖」——僅示範幾何型態與色階方向,非真實照片;請以相同幾何規則判讀最後一張實際影像,實照的顏色與質感會與示意圖不同,不可因此回無法判讀。'}];
+  exs.forEach(([label,data],i)=>{c.push({type:'image',source:{type:'base64',media_type:'image/jpeg',data}});c.push({type:'text',text:'範例'+(i+1)+':'+label});});
+  return c;
+}
 async function analyze(){
   if(!imgs.fl){$('r2').innerHTML='<div class="card warn">請先上傳螢光染色圖。</div>';return;}
   $('r2').innerHTML='<div class="card"><span class="spin"></span> AI 判讀中…</div>';
-  const content=[{type:'image',source:{type:'base64',...imgs.fl}}];
-  let ctx='影像為螢光染色圖。';
+  const content=packExemplars(flExemplars(),'');
+  let ctx='接下來的最後一張為「實際影像」(照片或影片):螢光染色評估。';
   if($('ctxLens').value)ctx+='目前試片:'+$('ctxLens').value+'。';
   ctx+='是否散光片:'+($('ctxToric').value==='y'?'是':'否')+'。時機:'+$('ctxWear').value+'。';
-  content.push({type:'text',text:ctx+'\n\n'+PROMPT});
+  content.push({type:'text',text:ctx});
+  content.push({type:'image',source:{type:'base64',...imgs.fl}});
+  content.push({type:'text',text:PROMPT});
   try{renderAI(await callAI(content));}
   catch(e){$('r2').innerHTML='<div class="card warn">判讀失敗:'+e.message+'</div>';}
 }
+const AI_WARN='<div class="card warn" style="border-left:5px solid var(--gold)"><b>⚠ AI 判讀為實驗性功能,校準中</b>——分類結論僅供參考,請以醫師判讀為準;發現 AI 判讀與醫師不一致時,請回報該案例協助校準。</div>';
 function renderAI(j){
   const adj=ADJUST[j.classification]||ADJUST['無法判讀'];
   const cls=j.classification==='理想'?'ok':(j.classification==='無法判讀'?'':'warn');
-  let h='<div class="card result"><div class="big '+cls+'">'+j.classification+'</div>';
+  let h=(isAI?AI_WARN:'')+'<div class="card result"><div class="big '+cls+'">'+j.classification+'</div>';
   h+='<span class="tag">AI 信心:'+(j.confidence||'—')+'</span><span class="tag">'+(j.movement||'')+'</span>';
   if(j.fluorescein_findings&&j.fluorescein_findings.length)h+='<h2>螢光圖觀察</h2><ul>'+j.fluorescein_findings.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
   if(j.topo_findings&&j.topo_findings.length)h+='<h2>Topo 觀察</h2><ul>'+j.topo_findings.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
@@ -742,23 +829,23 @@ function reSim(fk,ca){
 }
 
 /* ---------- ⑤ 戴後 topo 追蹤 ---------- */
-const PROMPT_PT=`你是角膜塑型戴後地形圖判讀輔助。僅依影像可見證據判讀,不得臆測。
-機轉背景:BC 正壓使中央上皮變薄、RC 環狀淚液庫負壓使中周邊上皮增厚,約兩週完成塑形——差異圖上應呈「中央壓平 + 中周邊陡化環」。
-判讀標準(Euclid 原廠明文):
-理想:置中治療區,完整紅色環圍繞中央角膜(bulls-eye)。
-smiley-face(治療區高於瞳孔)= 上方偏位(配適過平/sag不足)。
-frowny-face(治療區低於瞳孔)= 下方偏位(配適過緊/sag過高)。
-新月形陡區切入中央角膜 = 側向偏位(直徑太小)。
-中央陡島被較平治療區包圍 = 中央島;治療區非 360 度均勻壓平/呈橢圓或領結狀 = Vaulting(此兩者建議以軸向差異圖判讀,僅有戴後圖可能誤判,須註明)。
-中央島細分(僅差異圖可判):中央峰值 >0.00D 且紅環置中 = 真性中央島(過陡);中央峰值 <0.00D、常伴 smiley-face 或 placido 環紋扭曲 = 假性中央島(過平、上皮受壓,調整方向與真性相反)。可讀到差異圖數值時務必回報 central_peak_sign。
-smiley-face 紅環常偏上顳側;偏位型態常伴隨症狀:矯正不足、散光增加、鬼影/眩光。
-治療區周圍的褐色鐵質沉積環(iron ring/pigmented arc)為長期配戴之良性變化、治療穩定的表徵,幾乎所有長期配戴者可見——不列為異常、不觸發調整,於 notes 註記即可。
-治療區完整但範圍偏小、RC 環侵入瞳孔區 = 治療區偏小(可能眩光)。
-治療區呈橢圓/不完整、紅環強度不均或邊緣淚液不均 = 散光型不穩定(鏡片夜間 rocking),多見於散光延伸至周邊者。
-紅環淺、不均或不完整 = 中央壓平不足/置中不良的訊號。
-若影像為差異圖(difference map)請註明;若僅為戴後單圖,對中央島/Vaulting 的判讀信心需降級並說明。
-只輸出 JSON:
-{"classification":"理想|上方偏位|下方偏位|側向偏位|中央島/Vaulting|治療區偏小|橢圓/不完整治療區|無法判讀","confidence":"高|中|低","map_type":"差異圖|戴後單圖|無法判斷","central_peak_sign":"正|負|無中央峰|無法判讀","topo_findings":["…"],"notes":"限制說明"}`;
+const PROMPT_PT=`你是角膜塑型戴後地形圖判讀輔助。
+【第一原則:寧可棄權,不可猜測】僅依影像清楚可見的證據;無法確認地圖類型、色階、或治療區邊界時,一律回 classification:"無法判讀"。錯誤判讀會導致錯誤調整,比不判讀更有害。
+
+【地圖類型判定(第一步,必做)】先找畫面標題/標籤判斷是「軸向差異圖(difference/subtractive)」還是「戴後單張軸向圖」。偏位、中央島、Vaulting 原廠規定以差異圖判讀;若僅戴後單圖,confidence 上限=低,並於 notes 註明需差異圖。
+
+【色階語意(必核對圖上色標)】暖色(紅/橙)=較陡或度數較高;冷色(藍)=較平或度數較低。戴後差異圖的預期樣態:中央冷色圓形區=壓平治療區;環繞之暖色環=中周邊陡化環(紅環)。讀圖時先找到色標確認方向,色標不可見則回無法判讀。
+
+【判讀程序(必須依序)】
+1. 回報地圖類型與色標是否可見。
+2. 描述治療區:形狀(圓/橢圓/不完整)、大小、邊界清晰度;紅環:完整度、均勻度、幾何中心。
+3. 偏位判斷:紅環/治療區幾何中心相對角膜頂點或瞳孔中心的偏移方向與量;無明確參考點時不判偏位。
+4. 中央島:治療區內出現暖色峰=疑似;僅差異圖可判真假(峰值>0 真性/<0 假性),回報 central_peak_sign;單圖疑似時 classification 用"中央島/Vaulting"且 confidence=低。
+5. 治療區周圍褐色鐵質沉積環為良性,不觸發任何分類。
+6. 分類須引用至少兩項步驟2–4的可見證據,否則"無法判讀"。
+
+回覆只允許 JSON:
+{"classification":"理想|上方偏位|下方偏位|側向偏位|中央島/Vaulting|治療區偏小|橢圓/不完整治療區|無法判讀","confidence":"高|中|低","map_type":"差異圖|戴後單圖|無法判斷","central_peak_sign":"正|負|無中央峰|無法判讀","topo_findings":["逐項證據"],"notes":"限制說明"}`
 
 /* 治療進度對照(CLEAR 2021:多數屈光變化發生於首夜、1週內達目標效果;Euclid Module 4:14–30天完全矯正)
    分級門檻為系統操作化設定,非文獻原文 */
@@ -815,7 +902,11 @@ async function analyzePost(){
   let ctx='戴後角膜地形圖。已配戴 '+$('ptDur').selectedOptions[0].textContent+'。'
     +(sym?'患者主觀:'+sym+'。':'');
   try{
-    const j=await callAI([{type:'image',source:{type:'base64',...imgs.pt}},{type:'text',text:ctx+'\n\n'+PROMPT_PT}]);
+    const content=packExemplars(ptExemplars(),'');
+    content.push({type:'text',text:'接下來的最後一張為「實際影像」:'+ctx});
+    content.push({type:'image',source:{type:'base64',...imgs.pt}});
+    content.push({type:'text',text:PROMPT_PT});
+    const j=await callAI(content);
     renderPost(j,days,res,toric);
   }catch(e){$('r6').innerHTML='<div class="card warn">判讀失敗:'+e.message+'</div>';}
 }
@@ -823,7 +914,8 @@ async function analyzePost(){
 function renderPost(j,days,res,toric){
   const cls=j.classification;
   const good=cls==='理想'&&Math.abs(res)<=0.25;
-  let h='<div class="card result"><div class="big '+(good?'ok':(cls==='無法判讀'?'':'warn'))+'">'+cls
+  const isAI=j.confidence!=='醫師判讀';
+  let h=(isAI?AI_WARN:'')+'<div class="card result"><div class="big '+(good?'ok':(cls==='無法判讀'?'':'warn'))+'">'+cls
     +(cls==='理想'&&Math.abs(res)>0.25?'(但有殘餘度數)':'')+'</div>';
   h+='<span class="tag">AI 信心:'+(j.confidence||'—')+'</span><span class="tag">圖類型:'+(j.map_type||'—')+'</span><span class="tag">配戴 '+days+' 天</span><span class="tag">殘餘 '+res.toFixed(2)+'D</span>';
   const pg=progressGauge(days,res);
