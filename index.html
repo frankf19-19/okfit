@@ -719,6 +719,7 @@ async function analyze(){
 }
 const AI_WARN='<div class="card warn" style="border-left:5px solid var(--gold)"><b>⚠ AI 判讀為實驗性功能,校準中</b>——分類結論僅供參考,請以醫師判讀為準;發現 AI 判讀與醫師不一致時,請回報該案例協助校準。</div>';
 function renderAI(j){
+  const isAI=j.confidence!=='醫師判讀';
   const adj=ADJUST[j.classification]||ADJUST['無法判讀'];
   const cls=j.classification==='理想'?'ok':(j.classification==='無法判讀'?'':'warn');
   let h=(isAI?AI_WARN:'')+'<div class="card result"><div class="big '+cls+'">'+j.classification+'</div>';
