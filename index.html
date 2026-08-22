@@ -193,12 +193,17 @@ ul{margin:6px 0 6px 22px;}
   </ul>
 </details>
 <h2>上傳螢光染色圖</h2>
-<div class="drop" id="dropF" onclick="pickImg('fl')">點擊上傳<b>螢光染色圖或短影片</b><br><span style="font-size:.8rem;color:var(--muted)">影片建議 5–10 秒含數次眨眼(上限 18MB),可評估鏡片動態移動量</span><div id="prevF"></div></div>
+<div class="drop" id="dropF" onclick="pickImg('fl')">點擊上傳<b>螢光染色圖或短影片</b><br><span style="font-size:.8rem;color:var(--muted)">拍攝:鈷藍光+黃色濾片、對焦於鏡片、全鏡片入鏡(影片亦可,AI 取最清晰影格判讀;移動量請由醫師於裂隙燈判定並於下方選擇)</span><div id="prevF"></div></div>
 <input id="fileF" type="file" accept="image/*,video/*" hidden>
 <h2>試片背景資訊(提供 AI 判讀脈絡,選填)</h2>
 <div class="grid">
   <div class="field"><label>目前試片(度數/AC/直徑)</label><input id="ctxLens" placeholder="-4.00 / 44.25 / 10.6"></div>
+  <div class="field"><label>鏡片設計系</label>
+    <select id="lensDesign"><option value="EM">Emerald 系(EM/優得 Standard)——標準單RC</option><option value="TZ">Topaz 系(TZ/Myllo)——雙RC高離焦</option></select></div>
   <div class="field"><label>是否為散光片</label><select id="ctxToric"><option value="n">否</option><option value="y">是</option></select></div>
+  <div class="field"><label>眨眼移動量(上傳影片自動量測帶入,可覆改)</label>
+    <select id="flMove"><option value="">未評估</option><option value="約1-2mm">約 1–2mm(理想)</option><option value="明顯小於1mm">明顯 &lt;1mm(偏緊/吸附傾向)</option><option value="明顯大於2mm">明顯 &gt;2mm(偏鬆)</option></select>
+    <div id="moveOut"></div></div>
   <div class="field"><label>戴片時間</label><select id="ctxWear"><option>戴片後即時(診間評估)</option><option>過夜配戴後回診</option></select></div>
 </div>
 <div class="grid">
@@ -336,6 +341,11 @@ ul{margin:6px 0 6px 22px;}
 <tr><td>治療時程實證(CLEAR 2021)</td><td>多數屈光變化發生於<b>首夜</b>,目標效果於 <b>1 週內</b>達成(BCLA CLEAR 共識);機轉為角膜厚度重分佈(中央變薄+旁中央增厚)而非角膜彎曲;與原廠 14–30 天完全矯正窗口併用作進度對照;次發變化 pigmented arc 與 fibrillary lines 屬良性</td><td>Vincent/Cho 等 CLEAR–Orthokeratology 2021</td></tr>
 <tr><td>壓縮量(加深)實證</td><td>壓縮量 0.75D:一週全矯正率 64%;1.75D:92%,且眼軸控制效果多約 23.33%,代價為球面像差(夜間視覺)增加——高加深=到位快+控制強+像差多,取捨與家長溝通</td><td>Tang 等(引自 2024 壓縮量文獻回顧)</td></tr>
 <tr><td>配戴頻率與清潔實證</td><td>每週配戴 >6 天者鏡片吸附風險顯著較低;定期去蛋白清潔與全日視力清晰顯著相關;長期配戴者滿意度 88%、續戴意願 98%(305 位學童資料)</td><td>長期配戴者調查(2022)</td></tr>
+<tr><td>兩大設計系與染色基準</td><td>Emerald 系=EM 標準/MAX 與台製優得 Standard(標準單RC五弧);Topaz 系=TZ 標準/MAX 與台製 Myllo Infinite(雙RC高離焦)——Myllo 即 Topaz 設計(Frank 確認 2026/8)。系統螢光判讀基準依 Emerald 系建立;Topaz 系雙RC之較寬/雙層亮環屬設計預期非異常,專屬判讀基準待教材規格輸入,期間 AI 分類自動降信心、以醫師判讀為準</td><td>優立得產品線 + Frank 確認</td></tr>
+<tr><td>Topaz 系判讀基準(文獻類比)</td><td>Topaz 為 Euclid 高度數設計(最高10D,港理工 OHM 研究 NCT03881358);雙RC(雙儲液槽)設計之螢光「正常」型態:中央暗區較小、兩道亮環或單道較寬亮環(類比 DRL 雙儲液槽,BOZD 5.0 vs 標準 6.2);戴後 topo:治療區較小(文獻實測 2.8 vs 3.1mm)、紅環較強、球差較多——皆屬設計預期非配適異常;系統於 Topaz 系不將寬亮環計入偏緊證據。<b>本基準為文獻類比,正式規格待原廠/優立得教材確認後取代</b></td><td>NCT03881358 + NCT06825585 + Carracedo 2019 + Queirós 2024(DRL)</td></tr>
+<tr><td>螢光量化標準(專業文獻)</td><td>理想中央 alignment/bearing 區寬 3.5–4.5mm(Mountford/Gasson 教科書標準);量測工具研究實測參考:中央 4.20±0.74、淚液庫環 1.69±0.41、中周邊著陸 1.17±0.11、edge lift 0.48±0.06mm;本系統以鏡片徑 10.6mm 為比例尺自動量測中央暗區與亮環寬度,量測值優先於目測</td><td>PeerJ 2022(量測工具)+ Mountford 2005/Gasson 2015 + Menicon/Arise 試驗計畫書</td></tr>
+<tr><td>螢光判讀一致性實證</td><td>有經驗驗配師之螢光圖判讀一致性僅 40–60%,部分報告低於 20%——目測本質上不可靠,臨床常僅判「可/不可接受」;此為系統採「量測+結構化答卷+規則引擎」取代整體目測之依據,亦為 AI 判讀之合理期望框架</td><td>Vincent 2021、Wolffsohn 2013(引自 PeerJ 2022)</td></tr>
+<tr><td>診間位置≠夜間位置</td><td>開眼時鏡片位置不代表閉眼睡眠時位置——戴後角膜地形圖為鏡片夜間真實位置的唯一可靠紀錄;診間螢光置中良好而戴後 topo 偏位時,以 topo 為準進行調整</td><td>Mountford & Noack,CLS 2002/6</td></tr>
 <tr><td>規格衝突處理</td><td>教材載 TZ 可訂至−10.00,與 V5(TZ 標準140 上限−8.00)不一致;本系統一律以 V5 為準</td><td>V5 優先原則(Frank 確立)</td></tr>
 </table></div>
 </section>
@@ -570,7 +580,35 @@ function pickImg(k){const [fi,pv,dp]=IMGMAP[k];const f=$(fi);f.onchange=()=>{
     imgs[k]={media_type:file.type,data:rd.result.split(',')[1]};
     $(pv).innerHTML=isVideo?'<video src="'+rd.result+'" controls muted playsinline style="max-width:100%;max-height:240px;border-radius:8px"></video>':'<img src="'+rd.result+'" alt="">';
     $(dp).classList.add('has');};
-  rd.readAsDataURL(file);};f.click();}
+  rd.readAsDataURL(file);
+  if(!isVideo&&k==='fl'){
+    flMeas=null;
+    $('moveOut').innerHTML='<p class="src">⏳ 自動量測分區尺寸中…</p>';
+    const durl='data:'+file.type+';base64,';
+    const rd2=new FileReader();rd2.onload=()=>{
+      measureFlZones(rd2.result).then(m=>{
+        if(!m.ok){$('moveOut').innerHTML='<p class="src">分區自動量測未成功('+m.msg+'),AI 將以目測回答;移動量請以裂隙燈判定。</p>';return;}
+        flMeas=m;
+        const cOK=m.central>=3.3&&m.central<=4.9;
+        $('moveOut').innerHTML='<div class="card" style="margin-top:8px"><b>分區自動量測:中央暗區 ≈ '+m.central.toFixed(1)+' mm'+(cOK?'(於理想 3.5–4.5 範圍)':'')+'、亮環寬 ≈ '+m.ring.toFixed(1)+' mm</b>'
+          +'<div class="src">比例尺 '+m.diaPx+'px = 10.6mm;文獻標準:中央 3.5–4.5mm、亮環參考 1.7±0.4mm(實測工具研究);量測值將優先於 AI 目測納入分類。此為影像處理量測,受拍攝角度與品質影響,醫師可於答卷表覆核。</div></div>';
+      });
+    };rd2.readAsDataURL(file);
+  }
+  if(isVideo&&k==='fl'){
+    flMeas=null;
+    $('moveOut').innerHTML='<p class="src">⏳ 自動量測鏡片移動量中(瀏覽器本機運算,約數秒)…</p>';
+    measureLensMotion(file).then(m=>{
+      if(!m.ok){$('moveOut').innerHTML='<p class="warn" style="font-size:.88rem">自動量測失敗:'+m.msg+';移動量請以裂隙燈判定後於上方選擇。</p>';return;}
+      const cls=motionToClass(m.maxMove);
+      $('flMove').value=cls;
+      $('moveOut').innerHTML='<div class="card" style="margin-top:8px"><b>自動量測結果:眨眼間最大位移 ≈ '+m.maxMove.toFixed(2)+' mm</b>'
+        +'<span class="tag">'+cls+'</span>'
+        +'<div class="src">量測基礎:'+m.nFrames+' 有效影格(15fps)、比例尺 '+m.diaPx+'px = 10.6mm、基線晃動 '+m.jitter.toFixed(2)+'mm/格。'
+        +'結果已自動帶入「移動量」欄,醫師可覆改;此為影像處理量測,非 AI 判斷。</div></div>';
+    });
+  }
+  };f.click();}
 
 function parseAIJson(raw){
   let t=raw.replace(/```json|```/gi,'').trim();
@@ -625,25 +663,19 @@ const ADJUST={
   '中央島/Vaulting':{act:'sag 過高:RC 放平 0.2mm(1.00D)。',src:'Euclid 認證 Module 5 + ABB'},
   '無法判讀':{act:'影像品質不足或非螢光染色圖,請重新拍攝(建議鈷藍光下、對焦清晰、鏡片全貌入鏡)。',src:'—'}};
 
-const PROMPT=`你是角膜塑型片(orthokeratology)螢光染色判讀輔助,輸入可能為單張照片或短影片。
-【第一原則:寧可棄權,不可猜測】只依影像清楚可見的證據判讀;證據不足、影像模糊、曝光不當、螢光量不足時,一律回 classification:"無法判讀" 並說明缺什麼。錯誤的判讀會導致鏡片被改往錯誤方向,比不判讀更有害。
-
-【螢光顏色語意】綠色亮區=淚液厚(clearance/淚池);深色暗區=鏡片貼近角膜(alignment/touch);全片過亮=螢光過量、全片過暗=螢光不足或曝光問題,皆回無法判讀。
-
-【Euclid 鏡片分區(由中心至周邊,標準10.6mm)】BC 中央區:理想為淡暗均勻(淨空僅5–10µm,低於螢光可視門檻,暗屬正常,不可單憑中央暗判偏鬆);RC 環:應為明顯亮環(淚液庫);AC 著陸帶:應為均勻暗帶;周邊 edge:細亮緣。
-
-【判讀程序(必須依序)】
-1. 先逐區描述可見特徵:中央區(亮/暗/面積)、RC 環(亮度/寬度/完整度/均勻度)、著陸帶(均勻/局部壓迫)、edge(寬窄/均勻度)、整體同心度(圖形中心相對鏡片中心的偏移方向)。
-2. 影片另評估:眨眼時移動量(理想約1–2mm;<1mm 偏緊/吸附傾向、>2mm 偏鬆)與回位。
-3. 再依證據對照分類,分類必須同時滿足至少兩項對應證據,否則回"無法判讀":
-   偏緊(過陡):RC 亮環過寬過亮+edge 細弱+(影片)移動<1mm。
-   偏鬆(過平):中央大面積濃暗+RC 環細弱+edge 過寬+(影片)移動>2mm;常伴圖形上偏。
-   上方/下方/側向偏位:整體圖形明確偏離中心>約0.5mm 之方向。
-   理想:各區符合上述理想描述、同心良好、移動1–2mm。
-4. confidence:證據齊備且無矛盾=高;有次要矛盾=中;僅單一證據或影像品質欠佳=低(低信心時建議改回"無法判讀")。
-
+const PROMPT=`你是螢光染色影像的「特徵觀察員」,只回答下列選擇題,不做任何分類或診斷結論。分類由系統規則引擎負責。
+【觀察原則】只依影像清楚可見者作答;看不清楚的題目誠實選"無法判斷"——錯答比不答更有害。螢光下:綠色亮=淚液厚,深暗=鏡片貼近角膜。
+【影像品質檢查(先做)】合格條件:鈷藍光下拍攝(整體藍綠色調)、可見綠色螢光、鏡片完整入鏡、對焦清楚。不合格則 image_ok=false 並說明原因,其餘題目全填"無法判斷"。
+【七題問卷(逐題依影像作答)】
+1 central_zone 中央區(鏡片中心約60%):淡暗均勻|濃暗大面積|明亮淚池|無法判斷
+2 ring 環狀亮區(中央外圍的亮環):明顯完整|過寬過亮|細弱或不完整|無法判斷
+3 ring_uniform 亮環均勻度:均勻|上下不均|左右不均|無法判斷
+4 edge 鏡片最外緣亮緣:細亮緣|過寬明亮|幾乎不可見|無法判斷
+5 offset 整體圖形中心相對鏡片中心:置中|偏上|偏下|偏側|無法判斷
+6 bubbles 鏡片下氣泡(圓形小亮點群):無|有|無法判斷
+7 movement:一律填"由醫師裂隙燈評估"——影片抽格無法量測次秒級的眨眼移動,不要嘗試評估移動量;若輸入為影片,僅用於挑選最清晰、最穩定的影格做上述靜態判讀
 回覆只允許 JSON:
-{"classification":"理想|偏鬆(過平)|偏緊(過陡)|上方偏位|下方偏位|側向偏位|中央島/Vaulting|無法判讀","confidence":"高|中|低","fluorescein_findings":["逐區證據描述"],"movement":"影片移動量描述或未提供","notes":"限制與缺少的證據"}`
+{"image_ok":true|false,"quality_notes":"品質問題或空字串","central_zone":"…","ring":"…","ring_uniform":"…","edge":"…","offset":"…","bubbles":"…","movement":"…","raw_observation":"一句話描述整體所見"}`;
 
 function manualFl(){
   const c=$('flManual').value;
@@ -704,17 +736,188 @@ function packExemplars(exs,intro){
   exs.forEach(([label,data],i)=>{c.push({type:'image',source:{type:'base64',media_type:'image/jpeg',data}});c.push({type:'text',text:'範例'+(i+1)+':'+label});});
   return c;
 }
+/* ===== 影片移動量自動量測(瀏覽器影像處理,非 AI)=====
+   原理:逐格(≈15fps)以綠色通道萃取螢光區 → 質心追蹤;
+   比例尺:鏡片直徑 10.6mm ↔ 螢光區像素徑;眨眼格(面積驟減)排除後取相鄰格最大位移。 */
+async function measureLensMotion(file){
+  return new Promise((resolve)=>{
+    const url=URL.createObjectURL(file);
+    const v=document.createElement('video');
+    v.muted=true;v.playsInline=true;v.src=url;
+    v.onerror=()=>resolve({ok:false,msg:'影片無法解碼'});
+    v.onloadedmetadata=async()=>{
+      try{
+        const dur=Math.min(v.duration||0,12);
+        if(!dur||!isFinite(dur))return resolve({ok:false,msg:'讀不到影片長度'});
+        const W=240,H=Math.round(W*v.videoHeight/v.videoWidth)||180;
+        const cv=document.createElement('canvas');cv.width=W;cv.height=H;
+        const ctx=cv.getContext('2d',{willReadFrequently:true});
+        const step=1/15, frames=[];
+        const seekTo=t=>new Promise(r=>{v.onseeked=()=>r();v.currentTime=t;});
+        for(let t=0;t<dur;t+=step){
+          await seekTo(t);
+          ctx.drawImage(v,0,0,W,H);
+          const d=ctx.getImageData(0,0,W,H).data;
+          let n=0,sx=0,sy=0;const pts=[];
+          for(let y=0;y<H;y+=2)for(let x=0;x<W;x+=2){
+            const i=(y*W+x)*4,r=d[i],g=d[i+1],b=d[i+2];
+            if(g>70&&g>r*1.15&&g>b*1.05){n++;sx+=x;sy+=y;pts.push([x,y]);}
+          }
+          if(n<40){frames.push({t,valid:false});continue;}
+          const cx=sx/n,cy=sy/n;
+          const dists=pts.map(p=>Math.hypot(p[0]-cx,p[1]-cy)).sort((a,b)=>a-b);
+          const r95=dists[Math.floor(dists.length*0.95)];
+          frames.push({t,valid:true,cx,cy,area:n,r95});
+        }
+        URL.revokeObjectURL(url);
+        const valid=frames.filter(f=>f.valid);
+        if(valid.length<8)return resolve({ok:false,msg:'有效影格不足(螢光區偵測失敗——請確認鈷藍光+對焦)'});
+        const medArea=valid.map(f=>f.area).sort((a,b)=>a-b)[Math.floor(valid.length/2)];
+        const good=valid.filter(f=>f.area>medArea*0.55);        /* 排除眨眼遮蔽格 */
+        const medR=good.map(f=>f.r95).sort((a,b)=>a-b)[Math.floor(good.length/2)];
+        const mmPerPx=10.6/(medR*2);
+        const moves=[];
+        for(let i=1;i<good.length;i++){
+          if(good[i].t-good[i-1].t>0.35)continue;               /* 跨越眨眼斷點不計 */
+          moves.push(Math.hypot(good[i].cx-good[i-1].cx,good[i].cy-good[i-1].cy)*mmPerPx);
+        }
+        if(!moves.length)return resolve({ok:false,msg:'可比對影格不足'});
+        const sorted=[...moves].sort((a,b)=>a-b);
+        const jitter=sorted[Math.floor(sorted.length*0.5)];      /* 基線晃動(中位數) */
+        const maxMove=sorted[sorted.length-1];
+        const blink=frames.length-valid.length+valid.length-good.length;
+        if(jitter>0.45)return resolve({ok:false,msg:'畫面晃動過大(基線 '+jitter.toFixed(2)+'mm/格),請固定手機重拍',jitter});
+        resolve({ok:true,maxMove,jitter,diaPx:Math.round(medR*2),nFrames:good.length,blinkFrames:blink});
+      }catch(err){resolve({ok:false,msg:'量測失敗:'+err.message});}
+    };
+  });
+}
+/* ===== 螢光照片分區量測(影像處理,非 AI)=====
+   徑向亮度剖面:中央暗區寬(半升點×2)、亮環寬(FWHM);比例尺 = 鏡片徑10.6mm ↔ 螢光區像素徑 */
+function flMetricsFromProfile(prof,mmPerPx,binPx){
+  const n=prof.length;if(n<10)return{ok:false,msg:'剖面資料不足'};
+  const cLevel=(prof[0]+prof[1]+prof[2])/3;
+  let pk=-1,pkI=-1;
+  for(let i=Math.floor(n*0.30);i<Math.floor(n*0.95);i++)if(prof[i]>pk){pk=prof[i];pkI=i;}
+  if(pkI<0||pk<=cLevel+8)return{ok:false,msg:'偵測不到亮環(對比不足)'};
+  const half=cLevel+(pk-cLevel)/2;
+  let rHalf=-1;for(let i=0;i<pkI;i++)if(prof[i]>=half){rHalf=i;break;}
+  if(rHalf<0)return{ok:false,msg:'中央區邊界不明'};
+  let inn=rHalf,out=n-1;
+  for(let i=pkI;i<n;i++)if(prof[i]<half){out=i;break;}
+  const central=2*rHalf*binPx*mmPerPx, ring=(out-inn)*binPx*mmPerPx;
+  return{ok:true,central,ring,peakContrast:(pk-cLevel)};
+}
+async function measureFlZones(dataURL){
+  return new Promise(res=>{
+    const im=new Image();
+    im.onerror=()=>res({ok:false,msg:'影像載入失敗'});
+    im.onload=()=>{
+      const W=300,H=Math.round(W*im.height/im.width)||225;
+      const cv=document.createElement('canvas');cv.width=W;cv.height=H;
+      const ctx=cv.getContext('2d',{willReadFrequently:true});
+      ctx.drawImage(im,0,0,W,H);
+      const d=ctx.getImageData(0,0,W,H).data;
+      let n=0,sx=0,sy=0;const pts=[];
+      for(let y=0;y<H;y+=2)for(let x=0;x<W;x+=2){
+        const i=(y*W+x)*4,r=d[i],g=d[i+1],b=d[i+2];
+        if(g>70&&g>r*1.15&&g>b*1.05){n++;sx+=x;sy+=y;pts.push([x,y]);}
+      }
+      if(n<60)return res({ok:false,msg:'螢光區偵測失敗(請確認鈷藍光+對焦)'});
+      const cx=sx/n,cy=sy/n;
+      const dists=pts.map(p=>Math.hypot(p[0]-cx,p[1]-cy)).sort((a,b)=>a-b);
+      const rLens=dists[Math.floor(dists.length*0.95)];
+      const mmPerPx=10.6/(rLens*2);
+      const binPx=2,nb=Math.floor(rLens/binPx),prof=new Array(nb).fill(0),cnt=new Array(nb).fill(0);
+      for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+        const rr=Math.hypot(x-cx,y-cy);if(rr>=rLens)continue;
+        const bi=Math.floor(rr/binPx);if(bi>=nb)continue;
+        prof[bi]+=d[(y*W+x)*4+1];cnt[bi]++;
+      }
+      for(let i=0;i<nb;i++)prof[i]=cnt[i]?prof[i]/cnt[i]:0;
+      const m=flMetricsFromProfile(prof,mmPerPx,binPx);
+      if(!m.ok)return res(m);
+      res({ok:true,central:m.central,ring:m.ring,diaPx:Math.round(rLens*2),peakContrast:m.peakContrast});
+    };
+    im.src=dataURL;
+  });
+}
+let flMeas=null;
+function motionToClass(m){return m<1.0?'明顯小於1mm':(m<=2.2?'約1-2mm':'明顯大於2mm');}
+function classifyFluor(f,design){
+  const NA='無法判斷';
+  if(f.image_ok===false)return{c:'無法判讀',conf:'低',why:['影像品質不合格:'+(f.quality_notes||'')]};
+  const na=[f.central_zone,f.ring,f.edge,f.offset].filter(v=>v===NA||!v).length;
+  if(na>=2)return{c:'無法判讀',conf:'低',why:['關鍵特徵有 '+na+' 項無法判斷,證據不足']};
+  const why=[];let L=0,T=0;
+  if(f.central_zone==='濃暗大面積'){L++;why.push('中央濃暗大面積(鬆+1)');}
+  if(f.ring==='細弱或不完整'){L++;why.push('RC環細弱(鬆+1)');}
+  if(f.edge==='過寬明亮'){L++;why.push('edge過寬(鬆+1)');}
+  if(f.movement==='明顯大於2mm'){L++;why.push('移動>2mm(鬆+1)');}
+  if(f.ring==='過寬過亮'){
+    if(design==='TZ')why.push('亮環寬亮:於雙RC設計屬設計預期,不計入偏緊證據(文獻類比,待原廠基準)');
+    else{T++;why.push('RC環過寬過亮(緊+1)');}
+  }
+  if(f.edge==='幾乎不可見'){T++;why.push('edge細弱(緊+1)');}
+  if(f.movement==='明顯小於1mm'){T++;why.push('移動<1mm(緊+1)');}
+  if(f.central_zone==='明亮淚池'){T++;why.push('中央淚池(緊/sag過高+1)');}
+  const off=f.offset;
+  let c=null,conf='中';
+  if(L>=2&&T===0)c='偏鬆(過平)';
+  else if(T>=2&&L===0)c='偏緊(過陡)';
+  else if(L===0&&T===0){
+    if(off==='偏上')c='上方偏位';
+    else if(off==='偏下')c='下方偏位';
+    else if(off==='偏側')c='側向偏位';
+    else if(f.central_zone==='淡暗均勻'&&f.ring==='明顯完整'&&(f.edge==='細亮緣'||f.edge===NA)&&off==='置中'){c='理想';conf=(f.edge==='細亮緣'?'高':'中');}
+    else c='無法判讀';
+  }else if(L>=1&&off==='偏上'){c='偏鬆(過平)';why.push('圖形偏上與偏鬆一致');}
+  else if(T>=1&&off==='偏下'){c='偏緊(過陡)';why.push('圖形偏下與偏緊一致');}
+  else{c='無法判讀';why.push('鬆緊證據矛盾(鬆'+L+'/緊'+T+')');conf='低';}
+  if(c==='偏鬆(過平)'&&L>=3)conf='高';
+  if(c==='偏緊(過陡)'&&T>=3)conf='高';
+  if(f.central_zone==='明亮淚池'&&T>=2)why.push('注意:中央淚池+偏緊,建議同步排除中央島(戴後topo確認)');
+  if(f.bubbles==='有')why.push('鏡片下氣泡(dimple veiling):改善戴入技巧(戴入時滴人工淚液),非配適問題');
+  return{c,conf,why};
+}
 async function analyze(){
   if(!imgs.fl){$('r2').innerHTML='<div class="card warn">請先上傳螢光染色圖。</div>';return;}
   $('r2').innerHTML='<div class="card"><span class="spin"></span> AI 判讀中…</div>';
   const content=packExemplars(flExemplars(),'');
-  let ctx='接下來的最後一張為「實際影像」(照片或影片):螢光染色評估。';
+  const design=$('lensDesign').value;
+  const designTxt={EM:'鏡片為 Emerald 系標準五弧設計(單一RC亮環)。',
+    TZ:'鏡片為 Topaz 系(TZ/Myllo)雙RC高離焦設計(Euclid 高度數設計,最高10D)。依雙儲液槽設計文獻類比,其「正常」染色可能呈:中央暗區較小(BOZD較小)、兩道亮環(雙淚液庫)或單道較寬較亮之亮環——這些屬設計預期,絕不可因此判為偏緊或異常。逐題如實作答,並於 raw_observation 描述實際環數與各環寬度。'}[design];
+  let ctx='接下來的最後一張為「實際影像」(照片或影片):螢光染色評估。'+designTxt;
   if($('ctxLens').value)ctx+='目前試片:'+$('ctxLens').value+'。';
   ctx+='是否散光片:'+($('ctxToric').value==='y'?'是':'否')+'。時機:'+$('ctxWear').value+'。';
   content.push({type:'text',text:ctx});
   content.push({type:'image',source:{type:'base64',...imgs.fl}});
   content.push({type:'text',text:PROMPT});
-  try{renderAI(await callAI(content));}
+  try{
+    const f=await callAI(content);
+    f.movement=$('flMove').value||'';   /* 移動量以醫師裂隙燈判定為準,不採 AI */
+    /* 分區量測值優先於 AI 目測(量測>目測原則) */
+    if(flMeas&&flMeas.ok){
+      if(flMeas.central>5.2)f.central_zone='濃暗大面積';
+      else if(flMeas.central>=3.0&&flMeas.central<=4.9)f.central_zone='淡暗均勻';
+      if(flMeas.ring>2.4&&design!=='TZ')f.ring='過寬過亮';
+      else if(flMeas.ring<1.1)f.ring='細弱或不完整';
+      else if(flMeas.ring>=1.1&&flMeas.ring<=2.4)f.ring='明顯完整';
+      f._meas='中央'+flMeas.central.toFixed(1)+'mm/環'+flMeas.ring.toFixed(1)+'mm';
+    }
+    const r=classifyFluor(f,design);
+    if(f._meas)r.why.unshift('分區量測(優先於AI目測):'+f._meas+'——中央理想3.5–4.5mm、環參考1.7±0.4mm');
+    if(design!=='EM'&&r.c!=='無法判讀'){
+      if(r.conf==='高')r.conf='中';
+      r.why.push('⚠ 本片為 Topaz 系(TZ/Myllo)雙RC設計:系統判讀基準依 Emerald 系單RC建立,雙RC 之標準染色型態不同(較寬/雙層亮環屬設計預期,非配適異常)——分類僅供參考,請以醫師判讀為準;Topaz 系專屬基準待教材規格輸入後建立');
+    }
+    const rows=[['中央區',f.central_zone],['RC環',f.ring],['環均勻度',f.ring_uniform],['edge',f.edge],['圖形偏移',f.offset],['氣泡',f.bubbles],['移動量(醫師輸入)',f.movement||'未評估']]
+      .map(p=>'<tr><td>'+p[0]+'</td><td>'+(p[1]||'—')+'</td></tr>').join('');
+    renderAI({classification:r.c,confidence:r.conf,
+      fluorescein_findings:r.why.concat(f.raw_observation?['AI整體觀察:'+f.raw_observation]:[]),
+      movement:f.movement||'',notes:(f.quality_notes||'')});
+    $('r2').innerHTML+='<details class="card"><summary>AI 特徵答卷(校準除錯用,點開)</summary><table style="width:100%;margin-top:8px">'+rows+'</table><p class="src">分類由規則引擎依上表決定;分類錯誤時請記下哪一列答錯並回報,即可精準校準。</p></details>';
+  }
   catch(e){$('r2').innerHTML='<div class="card warn">判讀失敗:'+e.message+'</div>';}
 }
 const AI_WARN='<div class="card warn" style="border-left:5px solid var(--gold)"><b>⚠ AI 判讀為實驗性功能,校準中</b>——分類結論僅供參考,請以醫師判讀為準;發現 AI 判讀與醫師不一致時,請回報該案例協助校準。</div>';
@@ -845,6 +1048,7 @@ const PROMPT_PT=`你是角膜塑型戴後地形圖判讀輔助。
 5. 治療區周圍褐色鐵質沉積環為良性,不觸發任何分類。
 6. 分類須引用至少兩項步驟2–4的可見證據,否則"無法判讀"。
 
+注意:高度數/雙RC設計(TZ/Myllo,Topaz 系)之治療區本就較小、紅環較強(文獻:小光學區實測治療區約2.8mm vs 標準3.1mm)——屬設計預期;判「治療區偏小」須以是否涵蓋瞳孔為準,不可僅因比常見圖小而判異常。
 回覆只允許 JSON:
 {"classification":"理想|上方偏位|下方偏位|側向偏位|中央島/Vaulting|治療區偏小|橢圓/不完整治療區|無法判讀","confidence":"高|中|低","map_type":"差異圖|戴後單圖|無法判斷","central_peak_sign":"正|負|無中央峰|無法判讀","topo_findings":["逐項證據"],"notes":"限制說明"}`
 
