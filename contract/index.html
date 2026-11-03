@@ -214,6 +214,16 @@ table.inp tfoot td{border-top:1px solid var(--line);padding-top:7px}
 .aiload .dot:nth-child(2){animation-delay:.2s}.aiload .dot:nth-child(3){animation-delay:.4s}
 @keyframes bl{0%,100%{opacity:.2}50%{opacity:1}}
 @media(max-width:900px){.aihead{flex-direction:column;align-items:stretch}.aibtn{padding:13px}.aigrid{grid-template-columns:1fr}}
+.drafts{background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:10px;box-shadow:0 1px 4px rgba(159,176,196,.3)}
+.drow{display:flex;gap:6px}
+.drow select{flex:1;font-weight:600;color:var(--navyd)}
+.dbtn{border:1px solid var(--line);background:#fff;color:var(--navy);border-radius:7px;padding:0 10px;font:inherit;font-size:13px;cursor:pointer;white-space:nowrap}
+.dbtn.del{color:var(--muted)}.dbtn.del.arm{background:var(--bad);color:#fff;border-color:var(--bad)}
+.picks{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.picks button{border:1px solid #CFE0F3;background:var(--card);color:var(--navyd);border-radius:14px;padding:4px 10px;font:inherit;font-size:12px;cursor:pointer}
+.picks button:hover{background:var(--pale)}
+.picks button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+@media(max-width:900px){.dbtn{padding:0 12px}.picks button{padding:7px 12px;font-size:13px}}
 </style>
 </head>
 <body class="v-contract">
@@ -232,6 +242,10 @@ table.inp tfoot td{border-top:1px solid var(--line);padding-top:7px}
 <div class="wrap">
 <!-- INPUTS -->
 <aside class="form-pane">
+  <div class="drafts">
+    <label style="margin:0 0 4px">目前編輯的診所（自動儲存）</label>
+    <div class="drow"><select id="draftSel"></select><button type="button" class="dbtn" id="draftNew" title="新增診所">＋ 新增</button><button type="button" class="dbtn del" id="draftDel" title="刪除這家">刪除</button></div>
+  </div>
   <details class="sec" open><summary><span class="n">1</span>乙方（合作客戶）<span class="st" id="st1"></span></summary><div class="body">
     <label>公司／診所全名</label><input id="cName" placeholder="例：○○眼科診所">
     <div class="row2">
@@ -258,6 +272,7 @@ table.inp tfoot td{border-top:1px solid var(--line);padding-top:7px}
 
   <details class="sec" open><summary><span class="n">4</span>採購目標與條款<span class="st" id="st4"></span></summary><div class="body">
     <label>目標片數（合作期間累計）</label><input id="target" type="number" min="0" placeholder="例：150">
+    <div class="picks" id="picks"></div>
     <label>未達目標之處理方式</label>
     <select id="fail">
       <option value="C">全數歸還試片</option>
@@ -291,7 +306,7 @@ table.inp tfoot td{border-top:1px solid var(--line);padding-top:7px}
   </div></details>
   <button class="next" id="toContract">完成，查看合約 ›</button>
   <button class="reset" id="reset">清空重填</button>
-  <div class="ver">版本 2026/11/03 v3・優立得國際</div>
+  <div class="ver">版本 2026/11/03 v4・優立得國際</div>
 </aside>
 
 <!-- OUTPUT -->
@@ -373,8 +388,22 @@ const REG=[
 const rb=$('rpBody');
 REG.forEach(([n,p],i)=>rb.insertAdjacentHTML('beforeend',`<tr><td><input id="rn${i}" value="${n}"></td><td><input id="rp${i}" type="number" min="0" value="${p}"></td></tr>`));
 const FIELDS=[...ITEMS.map((_,i)=>'tp'+i),'rtax',...REG.map((_,i)=>'rn'+i),...REG.map((_,i)=>'rp'+i),'cName','cRep','cTax','cAddr','cTel','dStart','months','target','fail','svc','court','price','cost','vol','floor',...ITEMS.map((_,i)=>'q'+i)];
-function save(){try{const o={};FIELDS.forEach(f=>o[f]=$(f).value);localStorage.setItem('hv_trial_v9',JSON.stringify(o))}catch(e){}}
-function load(){try{const o=JSON.parse(localStorage.getItem('hv_trial_v9')||'null');if(o)FIELDS.forEach(f=>{if(o[f]!==undefined)$(f).value=o[f]})}catch(e){}}
+const DK='hv_trial_drafts',CK='hv_trial_cur';
+let drafts={},cur=null;
+function persist(){try{localStorage.setItem(DK,JSON.stringify(drafts));localStorage.setItem(CK,cur)}catch(e){}}
+function snap(){const o={};FIELDS.forEach(f=>o[f]=$(f).value);return o}
+function apply(o){const ao=document.getElementById('aiOut');if(ao)ao.innerHTML='';defaults();if(o)FIELDS.forEach(f=>{if(o[f]!==undefined)$(f).value=o[f]})}
+function defaults(){const ao=document.getElementById('aiOut');if(ao)ao.innerHTML='';FIELDS.forEach(f=>{const e=$(f);e.value=e.tagName==='SELECT'?e.options[0].value:''});REG.forEach(([n,p],i)=>{$('rn'+i).value=n;$('rp'+i).value=p});ITEMS.forEach((it,i)=>$('tp'+i).value=it.p??'');$('months').value=6;$('floor').value=20;$('court').value='臺灣高雄地方法院'}
+function newId(){return 'd'+Date.now().toString(36)}
+function fillSel(){const sel=$('draftSel');const ids=Object.keys(drafts).sort((a,b)=>(drafts[b].t||0)-(drafts[a].t||0));
+  sel.innerHTML=ids.map(id=>`<option value="${id}"${id===cur?' selected':''}>${esc((drafts[id].d.cName||'').trim()||'未命名診所')}</option>`).join('')}
+function save(){if(!cur)return;const name=(drafts[cur]&&drafts[cur].d.cName)||'';drafts[cur]={t:Date.now(),d:snap()};persist();if(name!==$('cName').value)fillSel()}
+function load(){
+  try{drafts=JSON.parse(localStorage.getItem(DK)||'{}')||{};cur=localStorage.getItem(CK)}catch(e){drafts={}}
+  if(!Object.keys(drafts).length){let old=null;try{old=JSON.parse(localStorage.getItem('hv_trial_v9')||'null')}catch(e){}
+    cur=newId();apply(old);drafts[cur]={t:Date.now(),d:snap()}}
+  if(!drafts[cur])cur=Object.keys(drafts)[0];
+  apply(drafts[cur].d);fillSel()}
 
 function rocDate(d){return `中華民國 ${d.getFullYear()-1911} 年 ${d.getMonth()+1} 月 ${d.getDate()} 日`}
 function endDate(start,m){const y=start.getFullYear(),mo=start.getMonth()+m,last=new Date(y,mo+1,0).getDate();const d=new Date(y,mo,Math.min(start.getDate(),last));d.setDate(d.getDate()-1);return d}
@@ -547,7 +576,7 @@ function renderCheck(c){
   el.innerHTML=(miss.length?'<b>尚未填寫：</b>'+miss.join('、')+'<a href="#" id="goForm">前往填寫 ›</a>':'')+(miss.length&&warn.length?'<br>':'')+(warn.length?'<b>提醒：</b>'+warn.join('；'):'');
 }
 document.addEventListener('click',e=>{if(e.target&&e.target.id==='goForm'){e.preventDefault();setView('form')}});
-function render(){const c=calc();renderContract(c);renderAnalysis(c);renderCheck(c);save()}
+function render(){const c=calc();renderPicks(c);renderContract(c);renderAnalysis(c);renderCheck(c);save()}
 document.querySelectorAll('input,select').forEach(e=>e.addEventListener('input',render));
 function setView(v){
   document.body.classList.remove('v-form','v-contract','v-analysis');document.body.classList.add('v-'+v);
@@ -572,7 +601,21 @@ $('copy').addEventListener('click',async()=>{
   catch(e){$('toast').textContent='無法自動複製，請在合約頁長按選取文字'}
   setTimeout(()=>$('toast').textContent='',2500);
 });
-$('reset').addEventListener('click',()=>{FIELDS.forEach(f=>{const e=$(f);e.value=e.tagName==='SELECT'?e.options[0].value:''});REG.forEach(([n,p],i)=>{$('rn'+i).value=n;$('rp'+i).value=p});ITEMS.forEach((it,i)=>$('tp'+i).value=it.p??'');$('months').value=6;$('floor').value=20;$('court').value='臺灣高雄地方法院';render()});
+$('reset').addEventListener('click',()=>{defaults();render();fillSel()});
+$('draftSel').addEventListener('change',e=>{save();cur=e.target.value;apply(drafts[cur].d);persist();render();fillSel();$('toast').textContent='已切換：'+($('cName').value||'未命名診所');setTimeout(()=>$('toast').textContent='',1800)});
+$('draftNew').addEventListener('click',()=>{save();cur=newId();defaults();drafts[cur]={t:Date.now(),d:snap()};persist();fillSel();render();
+  const s1=document.querySelector('.sec');if(s1)s1.open=true;if(window.innerWidth<=900)setView('form');$('cName').focus()});
+let delArm=null;
+$('draftDel').addEventListener('click',()=>{const b=$('draftDel');
+  if(!delArm){b.classList.add('arm');b.textContent='確定刪除？';delArm=setTimeout(()=>{b.classList.remove('arm');b.textContent='刪除';delArm=null},3000);return}
+  clearTimeout(delArm);delArm=null;b.classList.remove('arm');b.textContent='刪除';
+  delete drafts[cur];if(!Object.keys(drafts).length){cur=newId();defaults();drafts[cur]={t:Date.now(),d:snap()}}else{cur=Object.keys(drafts).sort((a,b)=>(drafts[b].t||0)-(drafts[a].t||0))[0];apply(drafts[cur].d)}
+  persist();fillSel();render()});
+function renderPicks(c){const el=$('picks');const opts=[];
+  if(c.qty)[3,4,5].forEach(k=>opts.push([c.qty*k,`試片×${k}＝${c.qty*k} 片`]));
+  if(c.vol&&c.m)opts.push([Math.round(c.vol*c.m),`依目前月量＝${Math.round(c.vol*c.m)} 片`]);
+  el.innerHTML=opts.length?'<span class="hint" style="margin:0;align-self:center">快速帶入：</span>'+opts.map(([v,t])=>`<button type="button" data-pick="${v}" class="${c.T===v?'on':''}">${t}</button>`).join(''):''}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-pick]');if(!b)return;$('target').value=b.dataset.pick;$('target').dispatchEvent(new Event('input',{bubbles:true}))});
 if(!(window.claude&&window.claude.use)){['prt','mPrt'].forEach(id=>$(id).classList.remove('hide'))}
 $('prt').addEventListener('click',()=>window.print());
 $('mPrt').addEventListener('click',()=>{document.body.classList.remove('sheet-on');setTimeout(()=>window.print(),250)});
