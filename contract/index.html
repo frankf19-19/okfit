@@ -195,6 +195,25 @@ table.inp tfoot td{border-top:1px solid var(--line);padding-top:7px}
 .tsum .tamt{margin-left:14px;color:var(--navy);font-size:15px}
 .paper,.tabs,.check,.panel{max-width:880px}
 @media(max-width:900px){.titem{grid-template-columns:minmax(0,1fr) auto}.ts{grid-column:1/-1;text-align:left;margin-top:-4px;font-size:12px}.tn small input{width:84px;font-size:16px}}
+.aicard{border:1px solid #CFE0F3;background:linear-gradient(180deg,#F4F8FC,#fff);border-radius:12px;padding:14px;margin:12px 0}
+.aihead{display:flex;gap:12px;align-items:center}
+.aihead>div{flex:1}
+.aibtn{border:0;background:var(--navy);color:#fff;font:inherit;font-weight:700;font-size:14px;padding:10px 16px;border-radius:9px;cursor:pointer;white-space:nowrap}
+.aibtn:disabled{opacity:.6;cursor:wait}
+#aiOut:not(:empty){margin-top:12px}
+.aigrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.aibox{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0;font-size:13.5px;line-height:1.7}
+.aibox h5{margin:0 0 4px;font-size:13px;color:var(--navy)}
+.aibox ul{margin:0;padding-left:18px}
+.aitbl{width:100%;border-collapse:collapse;font-size:13px}
+.aitbl th,.aitbl td{border-bottom:1px solid #E6EDF4;padding:6px;text-align:left;vertical-align:top}
+.aitbl th{color:var(--muted);font-weight:600;font-size:12px}
+.mini{border:1px solid var(--line);background:#fff;color:var(--navy);font:inherit;font-size:12px;padding:3px 10px;border-radius:12px;cursor:pointer;margin-left:8px;vertical-align:middle;font-weight:600}
+.aiload{padding:14px;color:var(--muted);font-size:13.5px}
+.aiload .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--navy);margin-right:4px;animation:bl 1s infinite}
+.aiload .dot:nth-child(2){animation-delay:.2s}.aiload .dot:nth-child(3){animation-delay:.4s}
+@keyframes bl{0%,100%{opacity:.2}50%{opacity:1}}
+@media(max-width:900px){.aihead{flex-direction:column;align-items:stretch}.aibtn{padding:13px}.aigrid{grid-template-columns:1fr}}
 </style>
 </head>
 <body class="v-contract">
@@ -272,7 +291,7 @@ table.inp tfoot td{border-top:1px solid var(--line);padding-top:7px}
   </div></details>
   <button class="next" id="toContract">完成，查看合約 ›</button>
   <button class="reset" id="reset">清空重填</button>
-  <div class="ver">版本 2026/11/03 v2・優立得國際</div>
+  <div class="ver">版本 2026/11/03 v3・優立得國際</div>
 </aside>
 
 <!-- OUTPUT -->
@@ -286,6 +305,11 @@ table.inp tfoot td{border-top:1px solid var(--line);padding-top:7px}
 
   <div id="analysis" class="panel hide">
     <div class="internal">⚠ 本頁為內部評估，請勿提供給診所</div>
+    <div class="aicard">
+      <div class="aihead"><div><b>🤖 AI 合約評估＋簽約話術</b><div class="hint" style="margin:2px 0 0">依目前填的數字判斷這份合約對公司是否合理，並產生給業務用的話術與 LINE 訊息。填了「公司成本」與「客戶目前月量」會更準。</div></div><button class="aibtn" id="aiBtn">開始分析</button></div>
+      <div id="aiOut"></div>
+    </div>
+    <h2 style="margin-top:22px">系統試算</h2>
     <h2>公司獲利（達標情境）</h2>
     <div class="kpis" id="kCo"></div>
     <div id="vCo"></div>
@@ -31271,6 +31295,140 @@ async function run(kind){
 btnW.addEventListener('click',()=>run('docx'));btnP.addEventListener('click',()=>run('pdf'));
 window.__makeDocx=makeDocx;window.__makePdf=makePdf;
 if(window.claude&&window.claude.use){window.claude.use('downloads').then(x=>{dl=x;if(!x){btnW.title=btnP.title='請在 claude.ai 開啟產生器以下載'}}).catch(()=>{})}
+})();
+
+</script>
+<script>
+// ===== AI 合約評估與簽約話術 =====
+(function(){
+const WORKER_URL='https://okfit-proxy.frankccc199.workers.dev', WORKER_TOKEN='hv2026ok';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=n=>'$'+Math.round(n).toLocaleString('en-US');
+let sampleFn=null, busy=false;
+
+function deal(){
+  const c=calc();                                   // 主程式的計算
+  const n=v=>v===null||v===undefined||isNaN(v)?null:v;
+  const svcRate=c.svc?0.05:0;
+  const out={
+    診所:$('cName').value.trim()||'（未填）',
+    合作月數:c.m, 起始日:c.start?c.start.toISOString().slice(0,10):null,
+    試片明細:c.rows.map(r=>({品項:r.n,片數:r.q,試片單價含稅:r.p,小計:r.s})),
+    試片總片數:c.qty, 試片總值含稅:Math.round(c.amt), 試片總值未稅:Math.round(c.amtEx),
+    目標片數:c.T, 每月需訂片數:c.T&&c.m?+(c.T/c.m).toFixed(1):null,
+    未達標處理:{C:'全數歸還試片',A:'按未達成比例支付試片價值',B:'以試片價值全額買斷'}[c.fail],
+    '每季5%售服鏡片':c.svc?'提供':'不提供',
+    追加試片是否計入目標:'是（但不得販售給患者，違者買斷且不計入）',
+    客戶目前每月訂片數:n(c.vol),
+    平均每片內價未稅:c.price?Math.round(c.price):null,
+    公司平均每片成本未稅:n(c.cost),
+    公司淨利率底線:Math.round(c.floor*100)+'%'
+  };
+  if(c.price&&c.cost!==null&&c.T){
+    const gm=c.price-c.cost, svcCost=Math.round(c.T*svcRate)*c.cost, net=c.T*gm-c.amtEx-svcCost;
+    out.達標試算={營收未稅:Math.round(c.T*c.price),訂片毛利:Math.round(c.T*gm),售服片成本:svcCost,扣除試片與售服後淨利:Math.round(net),淨利率:(net/(c.T*c.price)*100).toFixed(1)+'%',回本片數:gm-svcRate*c.cost>0?Math.ceil(c.amtEx/(gm-svcRate*c.cost)):null};
+  }
+  if(c.T&&c.qty)out.試片周轉倍數=+(c.T/c.qty).toFixed(1);
+  if(c.T&&c.amt)out.每訂一片分攤試片價值含稅=Math.round(c.amt/c.T);
+  return out;
+}
+
+function prompt(d){
+  return `你是台灣角膜塑型片代理商「優立得國際」的資深業務主管，正在審核一份給眼科診所／視光通路的「試片組專案合作備忘錄」，並教業務如何說服診所簽約。
+
+【合約機制】
+- 公司先借試片組給診所，合作期間內診所累計訂購角膜塑型片達「目標片數」，試片組無償贈與診所；未達標依合約處理。
+- 片數含常規鏡片（美製 Euclid／MyEuclid、國產優得 Standard／Myllo）與追加購買的試片；藥水不計。
+- 試片僅國產優得系列；試片不得當常規鏡片賣給患者。
+- 試片價值以含稅計；內價與成本以未稅計。
+
+【本案數據（JSON）】
+${JSON.stringify(d,null,1)}
+
+【請評估】
+1. 對公司是否合理：看淨利率是否高於底線、回本片數占目標比例、試片周轉倍數（目標÷試片片數，低於 3 倍代表試片投入偏重）、目標月量相對診所現況是否做得到、未達標條款的風險。缺資料就明說「缺少哪個數字，無法判斷哪一項」，不要自己編數字。
+2. 若不夠合理，給具體可調整的數字建議（例如目標片數改成多少、試片片數減到多少、期間改幾個月），並說明理由；數字要用上面資料算得出來。
+3. 給業務的簽約話術：口語、台灣用語、站在診所立場講好處。
+
+【寫作規範（必須遵守）】
+- 繁體中文、台灣用語。用「角膜塑型片」，不要用「OK鏡」；計量用「副」或「片」，不要用「付」。
+- 絕不提及或比較任何競爭品牌名稱；要比較時改用「請診所自己問三個問題」這類評估標準。
+- 不做療效保證或醫療宣稱；不透露公司成本、毛利、淨利給診所（這些只能出現在給業務看的評估欄位）。
+- 話術裡的數字只用「每月片數、試片價值、每片分攤試片價值、合作月數、目標片數」這類可以對診所講的數字。
+
+【只回覆一個 JSON 物件，不要任何其他文字】格式：
+{"verdict":"合理|需調整|不建議","score":0到100整數,"summary":"一句話結論（40字內）","reasons":["判斷理由，每點40字內，3-5點"],"risks":["風險，每點40字內，0-3點"],"suggestions":[{"item":"調整項目","from":"原本","to":"建議","why":"理由30字內"}],"missing":["缺少的資料，沒有就空陣列"],"pitch":{"opening":"開場白（60字內）","value_points":["對診所的好處，每點40字內，3-4點"],"numbers":"把數字算給診所聽的一段話（80字內）","objections":[{"q":"診所常見疑慮","a":"回應（70字內）"}],"closing":"促成簽約的收尾句（50字內）"},"line_message":"業務可直接貼到 LINE 傳給診所負責人的訊息（150字內，有禮貌、不提公司利潤）"}
+objections 給 4-5 題。`;
+}
+
+function parseJson(t){
+  t=String(t||'').trim();
+  const fence=t.match(/```(?:json)?\s*([\s\S]*?)```/);if(fence)t=fence[1];
+  const a=t.indexOf('{'),b=t.lastIndexOf('}');if(a<0||b<a)throw new Error('AI 回覆格式異常');
+  return JSON.parse(t.slice(a,b+1));
+}
+
+async function callWorker(p){
+  const rs=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json','X-App-Token':WORKER_TOKEN},body:JSON.stringify({messages:[{role:'user',content:p}]})});
+  if(!rs.ok)throw new Error('AI 服務回應 '+rs.status);
+  const data=await rs.json();
+  const txt=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+  return parseJson(txt);
+}
+
+function render(r){
+  const cls={合理:'ok',需調整:'warn',不建議:'bad'}[r.verdict]||'na';
+  const li=a=>(a||[]).map(x=>`<li>${esc(x)}</li>`).join('');
+  const p=r.pitch||{};
+  const pitchText=[`【開場】${p.opening||''}`,`【好處】\n${(p.value_points||[]).map(x=>'・'+x).join('\n')}`,`【算給診所聽】${p.numbers||''}`,`【常見疑慮】\n${(p.objections||[]).map(o=>`Q：${o.q}\nA：${o.a}`).join('\n')}`,`【收尾】${p.closing||''}`].join('\n\n');
+  $('aiOut').innerHTML=`
+  <div class="verdict ${cls}" style="display:flex;align-items:center;gap:10px"><span style="font-size:22px">${cls==='ok'?'✅':cls==='warn'?'🟡':'🔴'}</span><div><div>${esc(r.verdict)}${r.score!=null?`　<span style="font-weight:400">評分 ${esc(r.score)}／100</span>`:''}</div><div style="font-weight:400;margin-top:2px">${esc(r.summary)}</div></div></div>
+  <div class="aigrid">
+    <div class="aibox"><h5>判斷理由</h5><ul>${li(r.reasons)}</ul></div>
+    ${(r.risks||[]).length?`<div class="aibox"><h5>風險</h5><ul>${li(r.risks)}</ul></div>`:''}
+  </div>
+  ${(r.suggestions||[]).length?`<div class="aibox"><h5>建議調整</h5><table class="aitbl"><tr><th>項目</th><th>原本</th><th>建議</th><th>理由</th></tr>${r.suggestions.map(s=>`<tr><td>${esc(s.item)}</td><td>${esc(s.from)}</td><td><b>${esc(s.to)}</b></td><td>${esc(s.why)}</td></tr>`).join('')}</table></div>`:''}
+  ${(r.missing||[]).length?`<div class="verdict na">缺少資料：${esc(r.missing.join('、'))}。補上後重新分析會更準。</div>`:''}
+  <h2>簽約話術 <button class="mini" data-copy="pitch">複製話術</button></h2>
+  <div class="talk"><span class="q">開場</span><br>${esc(p.opening)}</div>
+  <div class="talk"><span class="q">對診所的好處</span><ul style="margin:4px 0 0;padding-left:20px">${li(p.value_points)}</ul></div>
+  <div class="talk"><span class="q">把數字算給診所聽</span><br>${esc(p.numbers)}</div>
+  ${(p.objections||[]).map(o=>`<div class="talk"><span class="q">Q：「${esc(o.q)}」</span><br>${esc(o.a)}</div>`).join('')}
+  <div class="talk"><span class="q">收尾促成</span><br>${esc(p.closing)}</div>
+  <h2>LINE 訊息範本 <button class="mini" data-copy="line">複製訊息</button></h2>
+  <div class="talk" style="white-space:pre-wrap">${esc(r.line_message)}</div>
+  <div class="hint">AI 產生內容僅供參考，數字與條件請以合約為準；送出前請自行確認。</div>`;
+  $('aiOut').dataset.pitch=pitchText;$('aiOut').dataset.line=r.line_message||'';
+}
+
+async function run(){
+  if(busy)return;
+  const d=deal();
+  if(!d.試片總片數||!d.目標片數){$('aiOut').innerHTML='<div class="verdict na">請先填「試片片數」與「目標片數」再分析。</div>';return}
+  busy=true;const btn=$('aiBtn');btn.disabled=true;btn.textContent='AI 分析中…';
+  $('aiOut').innerHTML='<div class="aiload"><span class="dot"></span><span class="dot"></span><span class="dot"></span>　AI 正在評估合約並撰寫話術，約需 10～60 秒…</div>';
+  try{
+    let r;
+    if(sampleFn){r=await sampleFn.json(prompt(d),{cache:false})}
+    else r=await callWorker(prompt(d));
+    render(r);
+  }catch(e){
+    const code=e&&e.code;
+    const msg=code==='not_granted'?'未允許使用 Claude，無法分析。':code==='rate_limited'?'使用太頻繁，請稍後再試。':'AI 分析失敗：'+((e&&e.message)||e)+'。請稍後再按一次。';
+    $('aiOut').innerHTML=`<div class="verdict bad">${esc(msg)}</div>`;
+  }finally{busy=false;btn.disabled=false;btn.textContent='重新分析'}
+}
+
+document.addEventListener('click',async e=>{
+  const b=e.target.closest('[data-copy]');if(!b)return;
+  const t=$('aiOut').dataset[b.dataset.copy]||'';
+  try{await navigator.clipboard.writeText(t);b.textContent='已複製 ✓'}catch(_){b.textContent='無法複製'}
+  setTimeout(()=>b.textContent=b.dataset.copy==='line'?'複製訊息':'複製話術',1800);
+});
+$('aiBtn').addEventListener('click',run);
+document.addEventListener('input',e=>{if(e.target.closest('.form-pane')&&$('aiOut').innerHTML&&!busy&&!$('aiStale')){$('aiOut').insertAdjacentHTML('afterbegin','<div id="aiStale" class="verdict warn">數字已變更，以下分析可能已過時，請按「重新分析」。</div>')}});
+if(window.claude&&window.claude.use){window.claude.use('sample').then(s=>{sampleFn=s}).catch(()=>{})}
 })();
 
 </script>
