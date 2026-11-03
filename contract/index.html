@@ -31488,7 +31488,7 @@ if(window.claude&&window.claude.use){window.claude.use('sample').then(s=>{sample
 // ===== 雲端同步（Supabase）=====
 (function(){
 const SB_URL='__SUPABASE_URL__';          // 例：https://xxxx.supabase.co
-const SB_KEY='__SUPABASE_ANON_KEY__';     // anon public key（資料表無法直接讀，須團隊密碼）
+const SB_KEY='__SUPABASE_ANON_KEY__';     // anon public key
 const configured=!SB_URL.startsWith('__')&&!SB_KEY.startsWith('__');
 const LK='hv_cloud';
 let auth=null, timer=null, syncing=false, mineOnly=false;
@@ -31498,7 +31498,7 @@ try{mineOnly=localStorage.getItem('hv_mine')==='1'}catch(e){}
 async function rpc(fn,args){
   const rs=await fetch(`${SB_URL}/rest/v1/rpc/${fn}`,{method:'POST',headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:'Bearer '+SB_KEY},body:JSON.stringify(args)});
   const t=await rs.text();
-  if(!rs.ok){if(t.includes('BAD_PASSWORD'))throw Object.assign(new Error('團隊密碼錯誤'),{bad:true});throw new Error('雲端回應 '+rs.status)}
+  if(!rs.ok){throw new Error('雲端回應 '+rs.status)}
   return t?JSON.parse(t):null;
 }
 const $=id=>document.getElementById(id);
@@ -31511,12 +31511,11 @@ box.insertAdjacentHTML('beforeend',`
   <div class="crow"><span class="cst" id="cloudSt"></span>
    <label class="mine"><input type="checkbox" id="mineOnly"> 只看我的</label>
    <button type="button" class="dbtn" id="cloudSync" title="從雲端抓最新">↻ 同步</button>
-   <button type="button" class="dbtn" id="cloudOut" title="登出雲端">登出</button></div>
+   <button type="button" class="dbtn" id="cloudOut" title="換人使用">換人</button></div>
   <div class="clogin hide" id="cloudLogin">
-   <div class="row2"><div><label>我的名字（負責業務）</label><input id="cName2" placeholder="例：Frank"></div>
-   <div><label>團隊密碼</label><input id="cPw" type="password"></div></div>
-   <button type="button" class="aibtn" id="cloudGo" style="width:100%;margin-top:8px">登入雲端，抓取所有診所</button>
-   <div class="hint" id="cloudMsg">登入後，各家診所會存到公司雲端，換手機、換電腦、同事之間都抓得到。</div>
+   <label>我的名字（負責業務）</label><input id="cName2" placeholder="例：Frank">
+   <button type="button" class="aibtn" id="cloudGo" style="width:100%;margin-top:8px">連上雲端，抓取所有診所</button>
+   <div class="hint" id="cloudMsg">連上後，各家診所會存到公司雲端，換手機、換電腦、同事之間都抓得到。</div>
   </div>
   <div class="hint" id="ownerLine"></div>
  </div>`);
@@ -31546,13 +31545,13 @@ const isEmpty=d=>!d||!d.d||(!(d.d.cName||'').trim()&&!d.d.target&&!['q0','q1','q
 function queuePush(id){if(isEmpty(drafts[id]))return;if(!configured||!auth)return;status('● 儲存中…','busy');clearTimeout(timer);timer=setTimeout(()=>push(id),1200)}
 async function push(id){
   const d=drafts[id];if(!d)return;
-  try{await rpc('trial_save',{p_pw:auth.pw,p_id:id,p_clinic:(d.d.cName||'').trim(),p_owner:d.o||auth.name,p_data:d.d,p_by:auth.name});if(drafts[id])drafts[id].s=true;persist();status('☁ 已存到雲端','ok')}
-  catch(e){status(e.bad?'密碼錯誤，請重新登入':'⚠ 雲端儲存失敗（已存在本機）','err');if(e.bad)logout()}
+  try{await rpc('trial_save',{p_id:id,p_clinic:(d.d.cName||'').trim(),p_owner:d.o||auth.name,p_data:d.d,p_by:auth.name});if(drafts[id])drafts[id].s=true;persist();status('☁ 已存到雲端','ok')}
+  catch(e){status('⚠ 雲端儲存失敗（已存在本機）','err')}
 }
 async function pull(){
   if(!configured||!auth||syncing)return;syncing=true;status('↻ 同步中…','busy');
   try{
-    const rows=await rpc('trial_list',{p_pw:auth.pw});
+    const rows=await rpc('trial_list',{});
     const cloudIds=new Set();
     (rows||[]).forEach(r=>{cloudIds.add(r.id);const t=new Date(r.updated_at).getTime();const loc=drafts[r.id];
       if(!loc||(loc.t||0)<=t)drafts[r.id]={t,d:r.data,o:r.owner,by:r.updated_by,s:true};else drafts[r.id].s=true;});
@@ -31566,7 +31565,7 @@ async function pull(){
     if(!drafts[cur])cur=Object.keys(drafts)[0];
     apply(drafts[cur].d);fillSel();render();
     status(`☁ 雲端 ${Object.values(drafts).filter(d=>d.s).length} 家・已同步`,'ok');
-  }catch(e){status(e.bad?'團隊密碼錯誤':'⚠ 無法連到雲端，先用本機資料','err');if(e.bad)logout()}
+  }catch(e){status('⚠ 無法連到雲端，先用本機資料','err')}
   finally{syncing=false}
 }
 function logout(){auth=null;try{localStorage.removeItem(LK)}catch(e){};showLogin()}
@@ -31576,15 +31575,15 @@ function showLogin(){
   ['cloudSync','cloudOut'].forEach(id=>$(id).classList.toggle('hide',!auth));
   document.querySelector('.mine').classList.toggle('hide',!auth);
   if(!inUI)status('雲端尚未設定（目前只存在這台裝置）','');
-  else if(!auth)status('尚未登入雲端（目前只存在這台裝置）','');
+  else if(!auth)status('尚未連上雲端（目前只存在這台裝置）','');
 }
 $('cloudGo').addEventListener('click',async()=>{
-  const name=$('cName2').value.trim(),pw=$('cPw').value;
-  if(!name||!pw){$('cloudMsg').textContent='請填名字與團隊密碼。';return}
+  const name=$('cName2').value.trim();
+  if(!name){$('cloudMsg').textContent='請填你的名字。';return}
   $('cloudGo').disabled=true;$('cloudMsg').textContent='驗證中…';
-  try{await rpc('trial_list',{p_pw:pw});auth={name,pw};try{localStorage.setItem(LK,JSON.stringify(auth))}catch(e){}
+  try{await rpc('trial_list',{});auth={name};try{localStorage.setItem(LK,JSON.stringify(auth))}catch(e){}
     Object.keys(drafts).forEach(id=>{if(!drafts[id].o)drafts[id].o=name});showLogin();await pull()}
-  catch(e){$('cloudMsg').textContent=e.bad?'團隊密碼錯誤。':'無法連到雲端：'+e.message}
+  catch(e){$('cloudMsg').textContent='無法連到雲端：'+e.message}
   finally{$('cloudGo').disabled=false}
 });
 $('cloudSync').addEventListener('click',pull);
@@ -31593,7 +31592,7 @@ $('mineOnly').addEventListener('change',e=>{mineOnly=e.target.checked;try{localS
 // 刪除同步到雲端（只刪按下刪除的那一家）
 $('draftDel').addEventListener('click',()=>{
   if(!configured||!auth||!$('draftDel').classList.contains('arm'))return;
-  const id=cur;setTimeout(()=>{if(!drafts[id])rpc('trial_delete',{p_pw:auth.pw,p_id:id}).then(()=>status('☁ 已從雲端刪除','ok')).catch(()=>status('⚠ 雲端刪除失敗','err'))},50);
+  const id=cur;setTimeout(()=>{if(!drafts[id])rpc('trial_delete',{p_id:id}).then(()=>status('☁ 已從雲端刪除','ok')).catch(()=>status('⚠ 雲端刪除失敗','err'))},50);
 },true);
 // 切到別的分頁回來時自動同步
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&auth)pull()});
