@@ -31487,16 +31487,16 @@ if(window.claude&&window.claude.use){window.claude.use('sample').then(s=>{sample
 <script>
 // ===== 雲端同步（Supabase）=====
 (function(){
-const SB_URL='__SUPABASE_URL__';          // 例：https://xxxx.supabase.co
-const SB_KEY='__SUPABASE_ANON_KEY__';     // anon public key
-const configured=!SB_URL.startsWith('__')&&!SB_KEY.startsWith('__');
+const SB_URL='https://vvfvtrmpkvatfhlzwpou.supabase.co';          // 例：https://xxxx.supabase.co
+const SB_KEY='sb_publishable_ZwoZ91MG-Gx1uv3TO6PC3Q_R-8OyNzC';     // anon public key
+const configured=true;
 const LK='hv_cloud';
 let auth=null, timer=null, syncing=false, mineOnly=false;
 try{auth=JSON.parse(localStorage.getItem(LK)||'null')}catch(e){}
 try{mineOnly=localStorage.getItem('hv_mine')==='1'}catch(e){}
 
 async function rpc(fn,args){
-  const rs=await fetch(`${SB_URL}/rest/v1/rpc/${fn}`,{method:'POST',headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:'Bearer '+SB_KEY},body:JSON.stringify(args)});
+  const rs=await fetch(`${SB_URL}/rest/v1/rpc/${fn}`,{method:'POST',headers:{'Content-Type':'application/json',apikey:SB_KEY},body:JSON.stringify(args)});
   const t=await rs.text();
   if(!rs.ok){throw new Error('雲端回應 '+rs.status)}
   return t?JSON.parse(t):null;
