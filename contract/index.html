@@ -95,6 +95,14 @@ table.inp tfoot td{border-top:1px solid var(--line);padding-top:7px}
 .check{max-width:820px;margin:0 auto 10px;background:#FFF6E5;border:1px solid #F0D3A0;border-radius:10px;padding:10px 14px;font-size:13px;color:#7A4E0E;line-height:1.7}
 .check.ok{background:#EAF6EF;border-color:#B7DEC5;color:#1E5A37}
 .bnav,.sheet{display:none}
+.paper.pdfpage{font-size:15.5px!important;line-height:1.9!important;border-radius:0!important}
+.paper.pdfpage h3{font-size:23px!important;letter-spacing:2px!important}
+.paper.pdfpage table{font-size:14.5px!important}.paper.pdfpage th,.paper.pdfpage td{padding:5px 8px!important}
+.paper.pdfpage .sig{grid-template-columns:1fr 1fr!important}
+.paper.pdfpage .blank{min-width:90px!important;background:none!important}
+.chip{max-width:260px;overflow:hidden;text-overflow:ellipsis}
+.check a{color:inherit;font-weight:700;margin-left:6px}
+@media(min-width:901px){.check a{display:none}}
 /* medium */
 @media(max-width:1180px){.chips{display:none}.wrap{grid-template-columns:360px minmax(0,1fr)}}
 /* mobile */
@@ -119,6 +127,8 @@ table.inp tfoot td{border-top:1px solid var(--line);padding-top:7px}
   .sig{grid-template-columns:1fr}
   .panel{padding:14px}
   .kpi .v{font-size:19px}
+  .toast{bottom:calc(92px + env(safe-area-inset-bottom))}
+  body.kb .bnav{display:none}
   .bnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -2px 10px rgba(0,0,0,.06)}
   .bnav button{flex:1;border:0;background:none;font:inherit;font-size:11.5px;color:var(--muted);padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:3px;border-radius:8px}
   .bnav button svg{width:22px;height:22px}
@@ -201,13 +211,7 @@ table.inp tfoot td{border-top:1px solid var(--line);padding-top:7px}
     <div class="hint">已帶入公司公定內價（V5，含稅／片）。可依個別診所調整；清空價格的品項不會列入附件一。</div>
   </div></details>
 
-  <details class="sec"><summary><span class="n">6</span>甲方（優立得）聯絡資料<span class="st" id="st6"></span></summary><div class="body">
-    <label>甲方地址</label><input id="hAddr">
-    <label>甲方電話</label><input id="hTel" inputmode="tel">
-    <div class="hint">填一次即會記住，清空重填也會保留。</div>
-  </div></details>
-
-  <details class="sec"><summary><span class="n">7</span>內部評估參數<span class="st opt">選填・不入合約</span></summary><div class="body">
+  <details class="sec"><summary><span class="n">6</span>內部評估參數<span class="st opt">選填・不入合約</span></summary><div class="body">
     <label>給客戶平均每片單價（未稅）</label><input id="price" type="number" min="0" placeholder="空白＝自動用附件一平均">
     <div class="hint" id="priceHint"></div>
     <label>公司平均每片成本（未稅）</label><input id="cost" type="number" min="0">
@@ -291,7 +295,7 @@ const REG=[
  ['優得 Myllo Infinite 240　球面',4200],['優得 Myllo Infinite 240　散光',4800]];
 const rb=$('rpBody');
 REG.forEach(([n,p],i)=>rb.insertAdjacentHTML('beforeend',`<tr><td><input id="rn${i}" value="${n}"></td><td><input id="rp${i}" type="number" min="0" value="${p}"></td></tr>`));
-const FIELDS=[...ITEMS.map((_,i)=>'tp'+i),'hAddr','hTel','rtax',...REG.map((_,i)=>'rn'+i),...REG.map((_,i)=>'rp'+i),'cName','cRep','cTax','cAddr','cTel','dStart','months','target','fail','svc','court','price','cost','vol','floor',...ITEMS.map((_,i)=>'q'+i)];
+const FIELDS=[...ITEMS.map((_,i)=>'tp'+i),'rtax',...REG.map((_,i)=>'rn'+i),...REG.map((_,i)=>'rp'+i),'cName','cRep','cTax','cAddr','cTel','dStart','months','target','fail','svc','court','price','cost','vol','floor',...ITEMS.map((_,i)=>'q'+i)];
 function save(){try{const o={};FIELDS.forEach(f=>o[f]=$(f).value);localStorage.setItem('hv_trial_v9',JSON.stringify(o))}catch(e){}}
 function load(){try{const o=JSON.parse(localStorage.getItem('hv_trial_v9')||'null');if(o)FIELDS.forEach(f=>{if(o[f]!==undefined)$(f).value=o[f]})}catch(e){}}
 
@@ -375,7 +379,7 @@ function renderContract(c){
   <p>本協議書一式二份，由雙方各執一份為憑，自雙方簽署之日起生效。</p>
 
   <div class="sig">
-   <div><b>甲方（供應商）：優立得國際有限公司</b><br>負責人：陳駿騫<br>統一編號：13181264<br>地址：${F($('hAddr').value.trim(),170)}<br>電話：${F($('hTel').value.trim(),110)}<div class="seal">甲方用印</div><div style="margin-top:8px">日期：民國　　年　　月　　日</div></div>
+   <div><b>甲方（供應商）：優立得國際有限公司</b><br>負責人：陳駿騫<br>統一編號：13181264<br>地址：高雄市鳥松區和盛東街 68 號 1 樓<br>電話：07-3701683<div class="seal">甲方用印</div><div style="margin-top:8px">日期：民國　　年　　月　　日</div></div>
    <div><b>乙方（合作客戶）：</b>${F(name,150)}<br>負責人：${F($('cRep').value.trim(),110)}<br>統一編號：${F($('cTax').value.trim(),110)}<br>地址：${F($('cAddr').value.trim(),170)}<br>電話：${F($('cTel').value.trim(),110)}<div class="seal">乙方用印</div><div style="margin-top:8px">日期：民國　　年　　月　　日</div></div>
   </div>
   <div style="border-top:2px dashed #999;margin:34px 0 22px"></div>
@@ -446,7 +450,6 @@ function renderCheck(c){
   if(!$('cTax').value.trim())miss.push('乙方統編');
   else if(!/^\d{8}$/.test($('cTax').value.trim()))warn.push('乙方統編應為 8 碼數字');
   if(!$('cAddr').value.trim())miss.push('乙方地址');
-  if(!$('hAddr').value.trim()||!$('hTel').value.trim())miss.push('甲方地址／電話');
   if(!c.start)miss.push('起始日');
   if(!c.qty)miss.push('試片片數');
   ITEMS.forEach((it,i)=>{if((vi('q'+i)||0)>0&&!v('tp'+i))miss.push(it.n+' 試片單價')});
@@ -458,13 +461,13 @@ function renderCheck(c){
   const c1=['cName','cRep','cTax','cAddr'].filter(k=>!$(k).value.trim()).length;
   st('st1',!c1,'缺 '+c1+' 項');st('st2',!!c.start,'待填起始日');st('st3',!!c.qty,'待填片數');st('st4',!!c.T,'待填目標');
   const nP=REG.filter((_,i)=>v('rp'+i)).length;st('st5',nP>0,'待填');$('st5').textContent=nP?nP+' 項':'待填';
-  st('st6',!!($('hAddr').value.trim()&&$('hTel').value.trim()),'待填');
   $('chips').innerHTML=`<span class="chip">${esc($('cName').value.trim()||'未填診所')}</span><span class="chip">試片 <b>${num(c.qty)}</b> 片｜<b>${fmt(c.amt)}</b></span><span class="chip">目標 <b>${c.T?num(c.T):'—'}</b> 片${c.T&&c.m?'｜月均 '+Math.ceil(c.T/c.m):''}</span>${c.end?`<span class="chip">至 ${rocDate(c.end).replace('中華民國 ','民國 ')}</span>`:''}`;
   const el=$('check');
   if(!miss.length&&!warn.length){el.className='check ok';el.textContent='✓ 合約欄位已填齊，可以出正式版';return}
   el.className='check';
-  el.innerHTML=(miss.length?'<b>尚未填寫：</b>'+miss.join('、'):'')+(miss.length&&warn.length?'<br>':'')+(warn.length?'<b>提醒：</b>'+warn.join('；'):'');
+  el.innerHTML=(miss.length?'<b>尚未填寫：</b>'+miss.join('、')+'<a href="#" id="goForm">前往填寫 ›</a>':'')+(miss.length&&warn.length?'<br>':'')+(warn.length?'<b>提醒：</b>'+warn.join('；'):'');
 }
+document.addEventListener('click',e=>{if(e.target&&e.target.id==='goForm'){e.preventDefault();setView('form')}});
 function render(){const c=calc();renderContract(c);renderAnalysis(c);renderCheck(c);save()}
 document.querySelectorAll('input,select').forEach(e=>e.addEventListener('input',render));
 function setView(v){
@@ -480,13 +483,18 @@ document.querySelectorAll('.bnav button').forEach(b=>b.addEventListener('click',
 $('scrim').addEventListener('click',()=>document.body.classList.remove('sheet-on'));
 [['mWord','dlWord'],['mPdf','dlPdf'],['mCopy','copy']].forEach(([m,d])=>$(m).addEventListener('click',()=>{document.body.classList.remove('sheet-on');$(d).click()}));
 document.querySelectorAll('input[type=number]').forEach(e=>e.setAttribute('inputmode','numeric'));
+document.addEventListener('focusin',e=>{if(/INPUT|SELECT/.test(e.target.tagName))document.body.classList.add('kb')});
+document.addEventListener('focusout',()=>setTimeout(()=>{if(!/INPUT|SELECT/.test((document.activeElement||{}).tagName||''))document.body.classList.remove('kb')},100));
 $('copy').addEventListener('click',async()=>{
-  try{await navigator.clipboard.writeText($('contract').innerText);$('toast').textContent='已複製合約文字'}
-  catch(e){$('toast').textContent='無法自動複製，請直接選取合約文字複製'}
+  const tmp=$('contract').cloneNode(true);tmp.removeAttribute('id');tmp.classList.remove('hide');tmp.style.cssText='position:fixed;left:-10000px;top:0;width:800px';document.body.appendChild(tmp);
+  const txt=tmp.innerText;tmp.remove();
+  try{await navigator.clipboard.writeText(txt);$('toast').textContent='已複製合約文字'}
+  catch(e){$('toast').textContent='無法自動複製，請在合約頁長按選取文字'}
   setTimeout(()=>$('toast').textContent='',2500);
 });
-$('reset').addEventListener('click',()=>{const keep={hAddr:$('hAddr').value,hTel:$('hTel').value};FIELDS.forEach(f=>{const e=$(f);e.value=e.tagName==='SELECT'?e.options[0].value:''});REG.forEach(([n,p],i)=>{$('rn'+i).value=n;$('rp'+i).value=p});ITEMS.forEach((it,i)=>$('tp'+i).value=it.p??'');$('months').value=6;$('floor').value=20;$('court').value='臺灣高雄地方法院';$('hAddr').value=keep.hAddr;$('hTel').value=keep.hTel;render()});
+$('reset').addEventListener('click',()=>{FIELDS.forEach(f=>{const e=$(f);e.value=e.tagName==='SELECT'?e.options[0].value:''});REG.forEach(([n,p],i)=>{$('rn'+i).value=n;$('rp'+i).value=p});ITEMS.forEach((it,i)=>$('tp'+i).value=it.p??'');$('months').value=6;$('floor').value=20;$('court').value='臺灣高雄地方法院';render()});
 load();render();
+if(window.innerWidth<=900&&!$('cName').value.trim())setView('form');
 </script>
 <script>
 var docx = (function(exports) {
@@ -31153,7 +31161,7 @@ async function makePdf(){
   const W=794,H=1123,PAD_X=70,PAD_T=70,PAD_B=80;
   const stage=document.createElement('div');stage.style.cssText='position:fixed;left:-10000px;top:0;';document.body.appendChild(stage);
   const pages=[];
-  function newPage(){const pg=document.createElement('div');pg.className='paper';pg.style.cssText=`width:${W}px;height:${H}px;max-width:none;margin:0;padding:${PAD_T}px ${PAD_X}px ${PAD_B}px;box-shadow:none;position:relative;overflow:hidden;box-sizing:border-box`;const body=document.createElement('div');pg.appendChild(body);stage.appendChild(pg);pages.push(pg);return body}
+  function newPage(){const pg=document.createElement('div');pg.className='paper pdfpage';pg.style.cssText=`width:${W}px;height:${H}px;max-width:none;margin:0;padding:${PAD_T}px ${PAD_X}px ${PAD_B}px;box-shadow:none;position:relative;overflow:hidden;box-sizing:border-box`;const body=document.createElement('div');pg.appendChild(body);stage.appendChild(pg);pages.push(pg);return body}
   // build units
   const units=[];let pendingArt=null,forceBreak=false;
   [...src.children].forEach(el=>{
