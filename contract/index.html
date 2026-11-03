@@ -143,6 +143,20 @@ table.inp tfoot td{border-top:1px solid var(--line);padding-top:7px}
   .sheet .sbtn{display:block;width:100%;padding:13px;border-radius:10px;border:0;font:inherit;font-size:15px;font-weight:700;margin-bottom:8px}
   .sheet .sbtn.w{background:var(--navy);color:#fff}.sheet .sbtn.p{background:var(--gold);color:#fff}.sheet .sbtn.c{background:var(--card);color:var(--ink);font-weight:400}
 }
+@media print{
+  @page{size:A4;margin:16mm 16mm 18mm}
+  body{background:#fff}
+  .top,.form-pane,.tabs,#check,#analysis,.bnav,.sheet,.scrim,.toast{display:none!important}
+  .wrap{display:block!important;padding:0!important}
+  body:not(.v-form) .out-pane, body.v-form .out-pane{display:block!important}
+  #contract{display:block!important;box-shadow:none;padding:0;max-width:none;font-size:12pt;line-height:1.8}
+  #contract .sig{grid-template-columns:1fr 1fr!important}
+  #contract .blank{background:none}
+  #contract p,#contract li,#contract tr,#contract .sig{break-inside:avoid}
+  #contract .art{break-after:avoid}
+  #contract .appx{break-before:page;border:0!important;margin:0!important}
+}
+.ver{font-size:11px;color:var(--muted);text-align:center;margin:-8px 0 16px}
 </style>
 </head>
 <body class="v-contract">
@@ -152,6 +166,7 @@ table.inp tfoot td{border-top:1px solid var(--line);padding-top:7px}
   <div class="actions">
     <button class="btn word" id="dlWord">⬇ Word</button>
     <button class="btn pdf" id="dlPdf">⬇ PDF</button>
+    <button class="btn ghost hide" id="prt">列印</button>
     <button class="btn ghost" id="copy">複製文字</button>
   </div>
 </header>
@@ -221,6 +236,7 @@ table.inp tfoot td{border-top:1px solid var(--line);padding-top:7px}
     </div>
   </div></details>
   <button class="reset" id="reset">清空重填</button>
+  <div class="ver">版本 2026/11/03・優立得國際</div>
 </aside>
 
 <!-- OUTPUT -->
@@ -260,6 +276,7 @@ table.inp tfoot td{border-top:1px solid var(--line);padding-top:7px}
   <p>建議用 Word 簽約；PDF 為圖片版，不能選取文字。</p>
   <button class="sbtn w" id="mWord">下載 Word（.docx）</button>
   <button class="sbtn p" id="mPdf">下載 PDF</button>
+  <button class="sbtn c hide" id="mPrt">列印／另存 PDF（可選取文字）</button>
   <button class="sbtn c" id="mCopy">複製合約文字</button>
 </div>
 
@@ -382,7 +399,7 @@ function renderContract(c){
    <div><b>甲方（供應商）：優立得國際有限公司</b><br>負責人：陳駿騫<br>統一編號：13181264<br>地址：高雄市鳥松區和盛東街 68 號 1 樓<br>電話：07-3701683<div class="seal">甲方用印</div><div style="margin-top:8px">日期：民國　　年　　月　　日</div></div>
    <div><b>乙方（合作客戶）：</b>${F(name,150)}<br>負責人：${F($('cRep').value.trim(),110)}<br>統一編號：${F($('cTax').value.trim(),110)}<br>地址：${F($('cAddr').value.trim(),170)}<br>電話：${F($('cTel').value.trim(),110)}<div class="seal">乙方用印</div><div style="margin-top:8px">日期：民國　　年　　月　　日</div></div>
   </div>
-  <div style="border-top:2px dashed #999;margin:34px 0 22px"></div>
+  <div class="appx" style="border-top:2px dashed #999;margin:34px 0 22px"></div>
   <h3 style="font-size:19px">附件一：優立得角膜塑形夜戴型隱形眼鏡內價表</h3>
   <p style="text-align:center;font-size:14px">${c.start?'生效日期：'+rocDate(c.start).replace('中華民國','民國')+'　｜　':''}計價單位：新台幣 元／片　｜　稅制性質：${rtax==='未稅'?'未稅價':'含稅價'}</p>
   <table><thead><tr><th>品名</th><th>合約常規內價（${rtax}）</th></tr></thead>
@@ -483,8 +500,9 @@ document.querySelectorAll('.bnav button').forEach(b=>b.addEventListener('click',
 $('scrim').addEventListener('click',()=>document.body.classList.remove('sheet-on'));
 [['mWord','dlWord'],['mPdf','dlPdf'],['mCopy','copy']].forEach(([m,d])=>$(m).addEventListener('click',()=>{document.body.classList.remove('sheet-on');$(d).click()}));
 document.querySelectorAll('input[type=number]').forEach(e=>e.setAttribute('inputmode','numeric'));
-document.addEventListener('focusin',e=>{if(/INPUT|SELECT/.test(e.target.tagName))document.body.classList.add('kb')});
-document.addEventListener('focusout',()=>setTimeout(()=>{if(!/INPUT|SELECT/.test((document.activeElement||{}).tagName||''))document.body.classList.remove('kb')},100));
+const isTyping=el=>el&&el.tagName==='INPUT'&&!['date','checkbox','radio'].includes(el.type);
+document.addEventListener('focusin',e=>{if(isTyping(e.target))document.body.classList.add('kb')});
+document.addEventListener('focusout',()=>setTimeout(()=>{if(!isTyping(document.activeElement))document.body.classList.remove('kb')},100));
 $('copy').addEventListener('click',async()=>{
   const tmp=$('contract').cloneNode(true);tmp.removeAttribute('id');tmp.classList.remove('hide');tmp.style.cssText='position:fixed;left:-10000px;top:0;width:800px';document.body.appendChild(tmp);
   const txt=tmp.innerText;tmp.remove();
@@ -493,6 +511,9 @@ $('copy').addEventListener('click',async()=>{
   setTimeout(()=>$('toast').textContent='',2500);
 });
 $('reset').addEventListener('click',()=>{FIELDS.forEach(f=>{const e=$(f);e.value=e.tagName==='SELECT'?e.options[0].value:''});REG.forEach(([n,p],i)=>{$('rn'+i).value=n;$('rp'+i).value=p});ITEMS.forEach((it,i)=>$('tp'+i).value=it.p??'');$('months').value=6;$('floor').value=20;$('court').value='臺灣高雄地方法院';render()});
+if(!(window.claude&&window.claude.use)){['prt','mPrt'].forEach(id=>$(id).classList.remove('hide'))}
+$('prt').addEventListener('click',()=>window.print());
+$('mPrt').addEventListener('click',()=>{document.body.classList.remove('sheet-on');setTimeout(()=>window.print(),250)});
 load();render();
 if(window.innerWidth<=900&&!$('cName').value.trim())setView('form');
 </script>
