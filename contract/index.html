@@ -224,6 +224,15 @@ table.inp tfoot td{border-top:1px solid var(--line);padding-top:7px}
 .picks button:hover{background:var(--pale)}
 .picks button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
 @media(max-width:900px){.dbtn{padding:0 12px}.picks button{padding:7px 12px;font-size:13px}}
+.cloud{margin-top:10px;padding-top:10px;border-top:1px dashed #E3E9F0}
+.crow{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.cst{flex:1;font-size:12px;color:var(--muted);min-width:120px}
+.cst.ok{color:var(--ok);font-weight:600}.cst.err{color:var(--bad);font-weight:600}.cst.busy{color:var(--warn)}
+.crow .dbtn{height:30px}
+.mine{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);margin:0}
+.mine input{width:auto}
+.clogin{margin-top:6px}
+#ownerLine:not(:empty){margin-top:6px}
 </style>
 </head>
 <body class="v-contract">
@@ -306,7 +315,7 @@ table.inp tfoot td{border-top:1px solid var(--line);padding-top:7px}
   </div></details>
   <button class="next" id="toContract">完成，查看合約 ›</button>
   <button class="reset" id="reset">清空重填</button>
-  <div class="ver">版本 2026/11/03 v4・優立得國際</div>
+  <div class="ver">版本 2026/11/03 v5・優立得國際</div>
 </aside>
 
 <!-- OUTPUT -->
@@ -31472,6 +31481,125 @@ document.addEventListener('click',async e=>{
 $('aiBtn').addEventListener('click',run);
 document.addEventListener('input',e=>{if(e.target.closest('.form-pane')&&$('aiOut').innerHTML&&!busy&&!$('aiStale')){$('aiOut').insertAdjacentHTML('afterbegin','<div id="aiStale" class="verdict warn">數字已變更，以下分析可能已過時，請按「重新分析」。</div>')}});
 if(window.claude&&window.claude.use){window.claude.use('sample').then(s=>{sampleFn=s}).catch(()=>{})}
+})();
+
+</script>
+<script>
+// ===== 雲端同步（Supabase）=====
+(function(){
+const SB_URL='__SUPABASE_URL__';          // 例：https://xxxx.supabase.co
+const SB_KEY='__SUPABASE_ANON_KEY__';     // anon public key（資料表無法直接讀，須團隊密碼）
+const configured=!SB_URL.startsWith('__')&&!SB_KEY.startsWith('__');
+const LK='hv_cloud';
+let auth=null, timer=null, syncing=false, mineOnly=false;
+try{auth=JSON.parse(localStorage.getItem(LK)||'null')}catch(e){}
+try{mineOnly=localStorage.getItem('hv_mine')==='1'}catch(e){}
+
+async function rpc(fn,args){
+  const rs=await fetch(`${SB_URL}/rest/v1/rpc/${fn}`,{method:'POST',headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:'Bearer '+SB_KEY},body:JSON.stringify(args)});
+  const t=await rs.text();
+  if(!rs.ok){if(t.includes('BAD_PASSWORD'))throw Object.assign(new Error('團隊密碼錯誤'),{bad:true});throw new Error('雲端回應 '+rs.status)}
+  return t?JSON.parse(t):null;
+}
+const $=id=>document.getElementById(id);
+function status(t,cls){const e=$('cloudSt');if(e){e.textContent=t;e.className='cst '+(cls||'')}}
+
+// ---- UI ----
+const box=document.querySelector('.drafts');
+box.insertAdjacentHTML('beforeend',`
+ <div class="cloud">
+  <div class="crow"><span class="cst" id="cloudSt"></span>
+   <label class="mine"><input type="checkbox" id="mineOnly"> 只看我的</label>
+   <button type="button" class="dbtn" id="cloudSync" title="從雲端抓最新">↻ 同步</button>
+   <button type="button" class="dbtn" id="cloudOut" title="登出雲端">登出</button></div>
+  <div class="clogin hide" id="cloudLogin">
+   <div class="row2"><div><label>我的名字（負責業務）</label><input id="cName2" placeholder="例：Frank"></div>
+   <div><label>團隊密碼</label><input id="cPw" type="password"></div></div>
+   <button type="button" class="aibtn" id="cloudGo" style="width:100%;margin-top:8px">登入雲端，抓取所有診所</button>
+   <div class="hint" id="cloudMsg">登入後，各家診所會存到公司雲端，換手機、換電腦、同事之間都抓得到。</div>
+  </div>
+  <div class="hint" id="ownerLine"></div>
+ </div>`);
+$('mineOnly').checked=mineOnly;
+
+// ---- 擴充草稿：記錄負責業務 ----
+const _fillSel=fillSel;
+fillSel=function(){
+  const sel=$('draftSel');const me=auth&&auth.name;
+  let ids=Object.keys(drafts).sort((a,b)=>(drafts[b].t||0)-(drafts[a].t||0));
+  if(mineOnly&&me)ids=ids.filter(id=>id===cur||(drafts[id].o||me)===me);
+  sel.innerHTML=ids.map(id=>{const d=drafts[id];const nm=((d.d&&d.d.cName)||'').trim()||'未命名診所';return `<option value="${id}"${id===cur?' selected':''}>${esc(nm)}${d.o&&d.o!==me?'（'+esc(d.o)+'）':''}</option>`}).join('');
+  const d=drafts[cur];$('ownerLine').textContent=d?`負責業務：${d.o||(me||'—')}${d.by?`　最後修改：${d.by} ${new Date(d.t).toLocaleString('zh-TW',{hour12:false})}`:''}`:'';
+};
+const _save=save;
+save=function(){
+  if(!cur)return;const prev=drafts[cur]||{};
+  const before=JSON.stringify(prev.d||{});_save();
+  const changed=JSON.stringify(drafts[cur].d)!==before;
+  drafts[cur].o=prev.o||(auth&&auth.name)||'';
+  if(prev.s)drafts[cur].s=true;
+  if(changed){if(auth&&auth.name)drafts[cur].by=auth.name}else{if(prev.t)drafts[cur].t=prev.t;if(prev.by)drafts[cur].by=prev.by}
+  persist();
+  if(changed)queuePush(cur);
+};
+const isEmpty=d=>!d||!d.d||(!(d.d.cName||'').trim()&&!d.d.target&&!['q0','q1','q2','q3'].some(k=>+d.d[k]>0));
+function queuePush(id){if(isEmpty(drafts[id]))return;if(!configured||!auth)return;status('● 儲存中…','busy');clearTimeout(timer);timer=setTimeout(()=>push(id),1200)}
+async function push(id){
+  const d=drafts[id];if(!d)return;
+  try{await rpc('trial_save',{p_pw:auth.pw,p_id:id,p_clinic:(d.d.cName||'').trim(),p_owner:d.o||auth.name,p_data:d.d,p_by:auth.name});if(drafts[id])drafts[id].s=true;persist();status('☁ 已存到雲端','ok')}
+  catch(e){status(e.bad?'密碼錯誤，請重新登入':'⚠ 雲端儲存失敗（已存在本機）','err');if(e.bad)logout()}
+}
+async function pull(){
+  if(!configured||!auth||syncing)return;syncing=true;status('↻ 同步中…','busy');
+  try{
+    const rows=await rpc('trial_list',{p_pw:auth.pw});
+    const cloudIds=new Set();
+    (rows||[]).forEach(r=>{cloudIds.add(r.id);const t=new Date(r.updated_at).getTime();const loc=drafts[r.id];
+      if(!loc||(loc.t||0)<=t)drafts[r.id]={t,d:r.data,o:r.owner,by:r.updated_by,s:true};else drafts[r.id].s=true;});
+    // 本機有但雲端沒有的：上傳（第一次登入時把本機草稿帶上去）
+    for(const id of Object.keys(drafts)){if(cloudIds.has(id))continue;
+      if(drafts[id].s){delete drafts[id];continue}            // 曾同步過、雲端已刪 → 本機也刪
+      if(isEmpty(drafts[id])){if(cloudIds.size)delete drafts[id];continue}  // 空白草稿不上傳
+      if(!drafts[id].o)drafts[id].o=auth.name;await push(id)}  // 本機新建、還沒上傳 → 上傳
+    if(!Object.keys(drafts).length){cur=newId();defaults();drafts[cur]={t:Date.now(),d:snap(),o:auth.name}}
+    persist();
+    if(!drafts[cur])cur=Object.keys(drafts)[0];
+    apply(drafts[cur].d);fillSel();render();
+    status(`☁ 雲端 ${Object.values(drafts).filter(d=>d.s).length} 家・已同步`,'ok');
+  }catch(e){status(e.bad?'團隊密碼錯誤':'⚠ 無法連到雲端，先用本機資料','err');if(e.bad)logout()}
+  finally{syncing=false}
+}
+function logout(){auth=null;try{localStorage.removeItem(LK)}catch(e){};showLogin()}
+function showLogin(){
+  const inUI=configured;
+  $('cloudLogin').classList.toggle('hide',!!auth||!inUI);
+  ['cloudSync','cloudOut'].forEach(id=>$(id).classList.toggle('hide',!auth));
+  document.querySelector('.mine').classList.toggle('hide',!auth);
+  if(!inUI)status('雲端尚未設定（目前只存在這台裝置）','');
+  else if(!auth)status('尚未登入雲端（目前只存在這台裝置）','');
+}
+$('cloudGo').addEventListener('click',async()=>{
+  const name=$('cName2').value.trim(),pw=$('cPw').value;
+  if(!name||!pw){$('cloudMsg').textContent='請填名字與團隊密碼。';return}
+  $('cloudGo').disabled=true;$('cloudMsg').textContent='驗證中…';
+  try{await rpc('trial_list',{p_pw:pw});auth={name,pw};try{localStorage.setItem(LK,JSON.stringify(auth))}catch(e){}
+    Object.keys(drafts).forEach(id=>{if(!drafts[id].o)drafts[id].o=name});showLogin();await pull()}
+  catch(e){$('cloudMsg').textContent=e.bad?'團隊密碼錯誤。':'無法連到雲端：'+e.message}
+  finally{$('cloudGo').disabled=false}
+});
+$('cloudSync').addEventListener('click',pull);
+$('cloudOut').addEventListener('click',()=>{logout();fillSel()});
+$('mineOnly').addEventListener('change',e=>{mineOnly=e.target.checked;try{localStorage.setItem('hv_mine',mineOnly?'1':'0')}catch(_){};fillSel()});
+// 刪除同步到雲端（只刪按下刪除的那一家）
+$('draftDel').addEventListener('click',()=>{
+  if(!configured||!auth||!$('draftDel').classList.contains('arm'))return;
+  const id=cur;setTimeout(()=>{if(!drafts[id])rpc('trial_delete',{p_pw:auth.pw,p_id:id}).then(()=>status('☁ 已從雲端刪除','ok')).catch(()=>status('⚠ 雲端刪除失敗','err'))},50);
+},true);
+// 切到別的分頁回來時自動同步
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&auth)pull()});
+
+showLogin();fillSel();
+if(configured&&auth)pull();
 })();
 
 </script>
