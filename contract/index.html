@@ -315,7 +315,7 @@ table.inp tfoot td{border-top:1px solid var(--line);padding-top:7px}
   </div></details>
   <button class="next" id="toContract">完成，查看合約 ›</button>
   <button class="reset" id="reset">清空重填</button>
-  <div class="ver">版本 2026/11/03 v5・優立得國際</div>
+  <div class="ver">版本 2026/11/03 v6・優立得國際</div>
 </aside>
 
 <!-- OUTPUT -->
@@ -31423,7 +31423,7 @@ function parseJson(t){
 
 async function callWorker(p){
   const rs=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json','X-App-Token':WORKER_TOKEN},body:JSON.stringify({messages:[{role:'user',content:p}]})});
-  if(!rs.ok)throw new Error('AI 服務回應 '+rs.status);
+  if(rs.status===429)throw new Error('AI 免費額度暫時用完（每分鐘／每日上限）');if(!rs.ok)throw new Error('AI 服務回應 '+rs.status);
   const data=await rs.json();
   const txt=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
   return parseJson(txt);
