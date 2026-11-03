@@ -157,10 +157,48 @@ table.inp tfoot td{border-top:1px solid var(--line);padding-top:7px}
   #contract .appx{break-before:page;border:0!important;margin:0!important}
 }
 .ver{font-size:11px;color:var(--muted);text-align:center;margin:-8px 0 16px}
+[data-f]{cursor:pointer;border-radius:3px;transition:background .15s}
+[data-f]:hover{background:#DCEBFA}
+.flash{animation:fl 1.2s}
+@keyframes fl{0%{box-shadow:0 0 0 4px rgba(217,138,43,.6)}100%{box-shadow:0 0 0 0 rgba(217,138,43,0)}}
+.prog{position:absolute;left:0;bottom:0;height:3px;background:#7FC8A9;transition:width .3s}
+.top{position:sticky}
+.step{display:flex;align-items:center;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#FFFDF2;width:max-content}
+.step button{border:0;background:var(--card);width:30px;height:32px;font-size:18px;color:var(--navy);cursor:pointer;flex:none}
+.step button:active{background:var(--pale)}
+.step input{border:0;border-radius:0;width:46px;text-align:center;padding:6px 2px;background:transparent}
+.step input:focus{box-shadow:none}
+.next{display:none}
+@media(min-width:1700px){
+  .wrap{max-width:none;grid-template-columns:380px minmax(0,1fr)}
+  .out-pane{display:grid;grid-template-columns:minmax(0,820px) minmax(380px,560px);gap:20px;align-items:start;justify-content:center}
+  .tabs{display:none}
+  #check{grid-column:1;grid-row:1;width:100%}
+  #contract{grid-column:1;grid-row:2;display:block!important;width:100%}
+  #analysis{grid-column:2;grid-row:1/span 2;display:block!important;position:sticky;top:calc(var(--hh) + 18px);max-height:calc(100vh - var(--hh) - 36px);overflow:auto}
+  #check.hide{display:block!important}
+}
+@media(max-width:900px){
+  .step button{width:40px;height:42px}.step input{width:52px;font-size:16px}
+  .next{display:block;width:100%;padding:14px;border:0;border-radius:10px;background:var(--navy);color:#fff;font:inherit;font-size:15px;font-weight:700;margin:6px 0 10px}
+  table.inp.tp td:nth-child(4),table.inp.tp th:nth-child(4){display:none}
+  table.inp.tp td:first-child{font-size:13px}
+}
+.tlist{margin-top:8px}
+.titem{display:grid;grid-template-columns:minmax(0,1fr) auto 72px;gap:10px;align-items:center;padding:9px 0;border-bottom:1px dashed #E3E9F0}
+.tn{font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.3}
+.tn small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:4px}
+.tn small input{width:70px;padding:3px 6px;font-size:12.5px;display:inline-block}
+.ts{text-align:right;font-size:13px;color:var(--muted);white-space:nowrap}
+.tsum{display:flex;align-items:baseline;gap:4px;padding:10px 0 2px;font-size:13.5px}
+.tsum span{flex:1;font-weight:700}
+.tsum .tamt{margin-left:14px;color:var(--navy);font-size:15px}
+.paper,.tabs,.check,.panel{max-width:880px}
+@media(max-width:900px){.titem{grid-template-columns:minmax(0,1fr) auto}.ts{grid-column:1/-1;text-align:left;margin-top:-4px;font-size:12px}.tn small input{width:84px;font-size:16px}}
 </style>
 </head>
 <body class="v-contract">
-<header class="top">
+<header class="top"><div class="prog" id="prog"></div>
   <h1>試片合作協議書產生器<small>優立得國際 ・ 填寫後自動產生合約</small></h1>
   <div class="chips" id="chips"></div>
   <div class="actions">
@@ -194,12 +232,9 @@ table.inp tfoot td{border-top:1px solid var(--line);padding-top:7px}
   </div></details>
 
   <details class="sec" open><summary><span class="n">3</span>借用試片<span class="st" id="st3"></span></summary><div class="body">
-    <table class="inp">
-      <thead><tr><th>品項</th><th>試片單價（含稅）</th><th style="width:72px">片數</th><th style="text-align:right">小計</th></tr></thead>
-      <tbody id="tpBody"></tbody>
-      <tfoot><tr><td><b>合計</b></td><td></td><td class="num"><b id="tpQty">0</b></td><td class="num"><b id="tpAmt">$0</b></td></tr></tfoot>
-    </table>
-    <div class="hint">以上僅為<b>試片</b>價格（含稅，公司規定），不是常規鏡片價格。試片僅提供國產（優得 Standard／Myllo）；美製 Euclid 僅供常規訂片，列於附件一。追加採購或補片的試片也列入目標片數。</div>
+    <div id="tpBody" class="tlist"></div>
+    <div class="tsum"><span>合計</span><b id="tpQty">0</b> 片<b id="tpAmt" class="tamt">$0</b></div>
+    <div class="hint">＋／− 每按一次增減 5 片，也可以直接輸入。<br>以上僅為<b>試片</b>價格（含稅，公司規定），不是常規鏡片價格。試片僅提供國產（優得 Standard／Myllo）；美製 Euclid 僅供常規訂片，列於附件一。追加採購或補片的試片也列入目標片數。</div>
   </div></details>
 
   <details class="sec" open><summary><span class="n">4</span>採購目標與條款<span class="st" id="st4"></span></summary><div class="body">
@@ -235,8 +270,9 @@ table.inp tfoot td{border-top:1px solid var(--line);padding-top:7px}
       <div><label>淨利率底線（%）</label><input id="floor" type="number" min="0" max="100" value="20"></div>
     </div>
   </div></details>
+  <button class="next" id="toContract">完成，查看合約 ›</button>
   <button class="reset" id="reset">清空重填</button>
-  <div class="ver">版本 2026/11/03・優立得國際</div>
+  <div class="ver">版本 2026/11/03 v2・優立得國際</div>
 </aside>
 
 <!-- OUTPUT -->
@@ -293,13 +329,13 @@ const pct=n=>(n*100).toFixed(1)+'%';
 const v=id=>{const x=parseFloat($(id).value);return isNaN(x)?null:x};
 const vi=id=>{const x=v(id);return x===null?null:Math.max(0,Math.floor(x))};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const F=(val,w)=>val!==null&&val!==''&&val!==undefined?`<span class="fill">${esc(val)}</span>`:`<span class="blank" style="${w?'min-width:'+w+'px':''}"></span>`;
+const F=(val,w,f)=>{const d=f?` data-f="${f}"`:'';return val!==null&&val!==''&&val!==undefined?`<span class="fill"${d}>${esc(val)}</span>`:`<span class="blank"${d} style="${w?'min-width:'+w+'px':''}"></span>`};
 const CN=['零','一','二','三','四','五','六','七','八','九','十','十一','十二'];
 
 // build trial rows
 const tb=$('tpBody');
 ITEMS.forEach((it,i)=>{
-  tb.insertAdjacentHTML('beforeend',`<tr><td title="${it.f}">${it.n}</td><td><input id="tp${i}" type="number" min="0" value="${it.p??''}" placeholder="待定" style="width:76px"></td><td><input id="q${i}" type="number" min="0" placeholder="0"></td><td class="num" id="s${i}">$0</td></tr>`);
+  tb.insertAdjacentHTML('beforeend',`<div class="titem"><div class="tn">${it.n}<small>單價 <input id="tp${i}" type="number" min="0" value="${it.p??''}" placeholder="待定"> 元</small></div><div class="step"><button type="button" data-st="q${i}" data-d="-1">−</button><input id="q${i}" type="number" min="0" placeholder="0"><button type="button" data-st="q${i}" data-d="1">＋</button></div><div class="ts" id="s${i}">$0</div></div>`);
 });
 
 const REG=[
@@ -340,9 +376,9 @@ function renderContract(c){
   const svc=$('svc').value==='1';
   const trRows=c.rows.length?c.rows.map(r=>`<tr><td class="l">${r.f} 試片</td><td>${num(r.q)} 片</td><td>${fmt(r.p)} 元</td><td>${fmt(r.s)} 元</td></tr>`).join('')
     :`<tr><td class="l">（請於左側填入試片片數）</td><td></td><td></td><td></td></tr>`;
-  const NA=(x,w)=>F(x,w);
+  const NA=(x,w,f)=>F(x,w,f);
   const failTxt={
-    C:`本協議期滿或終止時，若乙方未達成第二條第四款之資產贈與片數目標，乙方應將原借用之 ${NA(c.qty?num(c.qty):null,40)} 片試片全數完整歸還予甲方。`,
+    C:`本協議期滿或終止時，若乙方未達成第二條第四款之資產贈與片數目標，乙方應將原借用之 ${NA(c.qty?num(c.qty):null,40,'q0')} 片試片全數完整歸還予甲方。`,
     A:`本協議期滿或終止時，若乙方未達成第二條第四款之資產贈與片數目標，乙方應按未達成比例支付試片組資產價值（含稅），計算方式為：試片組資產總價值 ×（1 － 實際累計採購片數 ÷ 目標片數）；乙方支付完畢後，試片組所有權移轉予乙方。（例：目標 ${T?num(T):'○○'} 片，實際達成 ${T?num(Math.round(T*0.8)):'○○'} 片，達成率 80%，乙方應支付試片組資產總價值之 20%${c.amt?'，即含稅 '+fmt(c.amt*0.2)+' 元':''}。）`,
     B:`本協議期滿或終止時，若乙方未達成第二條第四款之資產贈與片數目標，乙方應以第一條所列資產總價值 新台幣 ${NA(c.amt?fmt(c.amt):null)} 元整（含稅）全額買斷試片組，乙方支付完畢後，試片組所有權移轉予乙方。`
   }[c.fail];
@@ -353,11 +389,11 @@ function renderContract(c){
   const priceArt=A(), returnArt=A(), confArt=A();
   $('contract').innerHTML=`
   <h3>優立得角膜塑形鏡片試片組專案合作備忘錄</h3><div class="tline"></div>
-  <p style="text-align:left">立協議書人：<br>甲方（供應商）：<b>優立得國際有限公司（HOLY VISION CO., LTD.）</b><br>乙方（合作客戶）：${F(name,220)}</p>
+  <p style="text-align:left">立協議書人：<br>甲方（供應商）：<b>優立得國際有限公司（HOLY VISION CO., LTD.）</b><br>乙方（合作客戶）：${F(name,220,'cName')}</p>
   <p>茲因甲方為優立得角膜塑形夜戴型隱形眼鏡之授權通路，乙方因驗配評估業務需要，向甲方借用專用試片組（以下簡稱試片組），作為驗配評估及後續常規片訂單之專用工具。雙方本於誠信互惠原則，經友好協商，特訂立本合作備忘錄（以下簡稱本協議），以資雙方共同遵守：</p>
 
   <p class="art">第一條　借用資產明細與保管</p>
-  <p>一、甲方同意提供乙方優立得角膜塑形鏡片試片組，共計 ${NA(c.qty?num(c.qty):null,40)} 片。本協議約定期限內，該試片組所有權仍歸甲方所有。借用品項與資產價值（含稅）如下：</p>
+  <p>一、甲方同意提供乙方優立得角膜塑形鏡片試片組，共計 ${NA(c.qty?num(c.qty):null,40,'q0')} 片。本協議約定期限內，該試片組所有權仍歸甲方所有。借用品項與資產價值（含稅）如下：</p>
   <table><thead><tr><th>借用品項</th><th>數量</th><th>試片單價（含稅）</th><th>資產價值（含稅）</th></tr></thead>
   <tbody>${trRows}</tbody>
   <tfoot><tr><td class="l">借用資產總計</td><td>${c.qty?num(c.qty)+' 片':''}</td><td>－</td><td>${c.qty?fmt(c.amt)+' 元':''}</td></tr></tfoot></table>
@@ -367,10 +403,10 @@ function renderContract(c){
 
   <p class="art">第二條　合作期限與採購片數目標</p>
   <ol>
-   <li>合作期限：自 ${c.start?NA(rocDate(c.start).replace('中華民國','民國')):NA(null,150)} 起至 ${c.end?NA(rocDate(c.end).replace('中華民國','民國')):NA(null,150)} 止，共計為期 ${NA(c.m?(CN[c.m]||c.m):null,30)} 個月。</li>
-   <li>採購片數目標：乙方承諾於本協議期限內，向甲方累計採購角膜塑形鏡片達 ${NA(T?num(T):null,50)} 片（含）以上（平均每月約 ${NA(T&&c.m?Math.ceil(T/c.m):null,30)} 片）。上述片數以甲方實際出貨之鏡片片數計算，包含附件一所列之美製及國產常規鏡片、本條第三款之新上市產品，以及乙方於合約期間內依第${returnArt}條所追加採購、補片或因耗損買斷之試片；藥水及耗材不列入計算。</li>
+   <li>合作期限：自 ${c.start?NA(rocDate(c.start).replace('中華民國','民國'),0,'dStart'):NA(null,150,'dStart')} 起至 ${c.end?NA(rocDate(c.end).replace('中華民國','民國'),0,'months'):NA(null,150,'months')} 止，共計為期 ${NA(c.m?(CN[c.m]||c.m):null,30,'months')} 個月。</li>
+   <li>採購片數目標：乙方承諾於本協議期限內，向甲方累計採購角膜塑形鏡片達 ${NA(T?num(T):null,50,'target')} 片（含）以上（平均每月約 ${NA(T&&c.m?Math.ceil(T/c.m):null,30,'target')} 片）。上述片數以甲方實際出貨之鏡片片數計算，包含附件一所列之美製及國產常規鏡片、本條第三款之新上市產品，以及乙方於合約期間內依第${returnArt}條所追加採購、補片或因耗損買斷之試片；藥水及耗材不列入計算。</li>
    <li>新上市產品併計特約：於本協議有效期間內，倘若甲方推出附件一以外之新品項（含國產新材質鏡片）並正式上市，該產品之採購片數亦納入本條第二款之目標片數合併計算。相應之產品規格與合約內價，雙方同意於該產品正式出貨前，另行以書面補充協議補登附加。</li>
-   <li>試片組資產贈與特約：倘若於本協議期限屆滿時，乙方之累計實際採購出貨片數達到上述第二款所定之 ${NA(T?num(T):null,50)} 片以上，則本協議第一條所列之試片組（總計 ${NA(c.qty?num(c.qty):null,40)} 片，含稅總價值 新台幣 ${NA(c.amt?fmt(c.amt):null)} 元）之所有權將無償贈與、移轉予乙方，轉作乙方之自有資產，甲方免除乙方之歸還與保管責任。若未達標，則依第${returnArt}條之規範執行。</li>
+   <li>試片組資產贈與特約：倘若於本協議期限屆滿時，乙方之累計實際採購出貨片數達到上述第二款所定之 ${NA(T?num(T):null,50,'target')} 片以上，則本協議第一條所列之試片組（總計 ${NA(c.qty?num(c.qty):null,40,'q0')} 片，含稅總價值 新台幣 ${NA(c.amt?fmt(c.amt):null)} 元）之所有權將無償贈與、移轉予乙方，轉作乙方之自有資產，甲方免除乙方之歸還與保管責任。若未達標，則依第${returnArt}條之規範執行。</li>
   </ol>
 
   <p class="art">第${priceArt}條　產品價格與交易條款</p>
@@ -397,7 +433,7 @@ function renderContract(c){
 
   <div class="sig">
    <div><b>甲方（供應商）：優立得國際有限公司</b><br>負責人：陳駿騫<br>統一編號：13181264<br>地址：高雄市鳥松區和盛東街 68 號 1 樓<br>電話：07-3701683<div class="seal">甲方用印</div><div style="margin-top:8px">日期：民國　　年　　月　　日</div></div>
-   <div><b>乙方（合作客戶）：</b>${F(name,150)}<br>負責人：${F($('cRep').value.trim(),110)}<br>統一編號：${F($('cTax').value.trim(),110)}<br>地址：${F($('cAddr').value.trim(),170)}<br>電話：${F($('cTel').value.trim(),110)}<div class="seal">乙方用印</div><div style="margin-top:8px">日期：民國　　年　　月　　日</div></div>
+   <div><b>乙方（合作客戶）：</b>${F(name,150,'cName')}<br>負責人：${F($('cRep').value.trim(),110,'cRep')}<br>統一編號：${F($('cTax').value.trim(),110,'cTax')}<br>地址：${F($('cAddr').value.trim(),170,'cAddr')}<br>電話：${F($('cTel').value.trim(),110,'cTel')}<div class="seal">乙方用印</div><div style="margin-top:8px">日期：民國　　年　　月　　日</div></div>
   </div>
   <div class="appx" style="border-top:2px dashed #999;margin:34px 0 22px"></div>
   <h3 style="font-size:19px">附件一：優立得角膜塑形夜戴型隱形眼鏡內價表</h3>
@@ -479,6 +515,8 @@ function renderCheck(c){
   st('st1',!c1,'缺 '+c1+' 項');st('st2',!!c.start,'待填起始日');st('st3',!!c.qty,'待填片數');st('st4',!!c.T,'待填目標');
   const nP=REG.filter((_,i)=>v('rp'+i)).length;st('st5',nP>0,'待填');$('st5').textContent=nP?nP+' 項':'待填';
   $('chips').innerHTML=`<span class="chip">${esc($('cName').value.trim()||'未填診所')}</span><span class="chip">試片 <b>${num(c.qty)}</b> 片｜<b>${fmt(c.amt)}</b></span><span class="chip">目標 <b>${c.T?num(c.T):'—'}</b> 片${c.T&&c.m?'｜月均 '+Math.ceil(c.T/c.m):''}</span>${c.end?`<span class="chip">至 ${rocDate(c.end).replace('中華民國 ','民國 ')}</span>`:''}`;
+  const req=[!!$('cName').value.trim(),!!$('cRep').value.trim(),/^\d{8}$/.test($('cTax').value.trim()),!!$('cAddr').value.trim(),!!c.start,!!c.qty,!!c.T,REG.some((_,i)=>v('rp'+i))];
+  $('prog').style.width=(req.filter(Boolean).length/req.length*100)+'%';
   const el=$('check');
   if(!miss.length&&!warn.length){el.className='check ok';el.textContent='✓ 合約欄位已填齊，可以出正式版';return}
   el.className='check';
@@ -514,6 +552,20 @@ $('reset').addEventListener('click',()=>{FIELDS.forEach(f=>{const e=$(f);e.value
 if(!(window.claude&&window.claude.use)){['prt','mPrt'].forEach(id=>$(id).classList.remove('hide'))}
 $('prt').addEventListener('click',()=>window.print());
 $('mPrt').addEventListener('click',()=>{document.body.classList.remove('sheet-on');setTimeout(()=>window.print(),250)});
+document.addEventListener('click',e=>{
+  const sb=e.target.closest('[data-st]');
+  if(sb){const inp=$(sb.dataset.st);inp.value=Math.max(0,(parseInt(inp.value)||0)+(+sb.dataset.d)*5);inp.dispatchEvent(new Event('input',{bubbles:true}));return}
+  const fe=e.target.closest('#contract [data-f]');
+  if(fe){const inp=$(fe.dataset.f);if(!inp)return;const sec=inp.closest('details');if(sec)sec.open=true;
+    if(window.innerWidth<=900)setView('form');
+    setTimeout(()=>{inp.scrollIntoView({block:'center',behavior:'smooth'});inp.focus({preventScroll:true});inp.classList.remove('flash');void inp.offsetWidth;inp.classList.add('flash')},60)}
+});
+$('toContract').addEventListener('click',()=>setView('contract'));
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter'||e.target.tagName!=='INPUT')return;
+  const all=[...document.querySelectorAll('.form-pane input')].filter(x=>x.offsetParent!==null);
+  const i=all.indexOf(e.target);if(i>-1&&all[i+1]){e.preventDefault();all[i+1].focus();all[i+1].select&&all[i+1].select()}
+});
 load();render();
 if(window.innerWidth<=900&&!$('cName').value.trim())setView('form');
 </script>
